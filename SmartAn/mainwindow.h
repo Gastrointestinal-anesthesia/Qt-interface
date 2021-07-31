@@ -38,14 +38,17 @@ public:
 
 private slots:
     // 添加实时数据槽
-    void btnInfoOKSlot();
-    void btnInfoStartSlot();
-    void btnInfoStopSlot();
     void createItemsARow(int rowNo,QString Strnum,QString Age,QString Sex); // 为某一行创建items
     void clearAllRow();
     void on_tblHisPatient_itemClicked(QTableWidgetItem *item);
 
     void on_btnHisQuery_clicked();
+
+    void on_btnInfoOK_clicked();
+
+    void on_btnInfoStart_clicked();
+
+    void on_btnInfoStop_clicked();
 
 signals:
     void mySignal(QVariant ,QString );     // 信号只能声明不能定义

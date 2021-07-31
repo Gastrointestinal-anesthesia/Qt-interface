@@ -19,10 +19,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    connect(ui->btnInfoOK, &QPushButton::clicked, this, &MainWindow::btnInfoOKSlot);
-    connect(ui->btnInfoStart, &QPushButton::clicked, this, &MainWindow::btnInfoStartSlot);
-    connect(ui->btnInfoStop, &QPushButton::clicked, this, &MainWindow::btnInfoStopSlot);
-
     setupRealtimeDataDemo(ui->widgetPressure, "舒张压", "收缩压");
     setupRealtimeDataDemo(ui->widgetBIS, "血氧", "BIS");
 
@@ -43,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot, const QString& first, const QString& second)
 {
     customPlot->addGraph(); // blue line
-    customPlot->graph(0)->setPen(QPen(Qt::blue));
+    customPlot->graph(0)->setPen(QPen(Qt::darkGreen));
     customPlot->graph(0)->setName(first);
     //customPlot->graph(0)->setBrush(QBrush(QColor(240, 255, 200)));
     //customPlot->graph(0)->setAntialiasedFill(false);
@@ -154,90 +150,14 @@ bool selectPatientValue(QString strSql, std::vector<PatientValue>& vecPatientVal
             patientValue.DIAP= result.value("DIAP").toInt();
             patientValue.SYSP= result.value("SYSP").toInt();
             patientValue.SpO2= result.value("SpO2").toInt();
-             patientValue.SaO2= result.value("SaO2").toInt();
-              patientValue.BIS= result.value("BIS").toInt();
+            patientValue.SaO2= result.value("SaO2").toInt();
+            patientValue.BIS= result.value("BIS").toInt();
             patientValue.strCreateTime= result.value("create_time").toDateTime();
 
             vecPatientValue.push_back(patientValue);
         }
     }
 
-}
-
-void MainWindow::btnInfoOKSlot()
-{
-    QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定保存吗？",QMessageBox::Yes|QMessageBox::No);
-    switch (result)
-    {
-    case QMessageBox::Yes:
-    {
-        QString number = ui->txtInfoNumber->text();
-        QString sex = QString::number(ui->cmbInfoSex->currentIndex());
-
-        QString height = ui->txtInfoHeight->text();
-        QString weight = ui->txtInfoWeight->text();
-        QString age = ui->txtInfoAge->text();
-        QString strSql = "insert into patient (number, sex, height, weight, age) values('"
-                + number + "',"
-                + sex + ","
-                + height + ","
-                + weight + ","
-                + age
-                + ")";
-
-        bool result = insertSql(strSql);
-        if (result)
-        {
-            m_number = number;
-            QMessageBox::information(NULL, "提示", "插入成功！");
-        }
-        else
-        {
-            QMessageBox::information(NULL, "提示", "插入失败！");
-        }
-    }
-        break;
-    default:
-        break;
-    }
-}
-
-void MainWindow::btnInfoStartSlot()
-{
-    QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定开始录制吗？",QMessageBox::Yes|QMessageBox::No);
-    switch (result)
-    {
-    case QMessageBox::Yes:
-    {
-        m_isStart = true;
-        ui->tabSmart->setCurrentIndex(1);
-    }
-        break;
-    case QMessageBox::No:
-        qDebug()<<"NO";
-        break;
-    default:
-        break;
-    }
-
-}
-
-void MainWindow::btnInfoStopSlot()
-{
-    QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定开始录制吗？",QMessageBox::Yes|QMessageBox::No);
-    switch (result)
-    {
-    case QMessageBox::Yes:
-    {
-        m_isStart = false;
-    }
-        break;
-    case QMessageBox::No:
-
-        break;
-    default:
-        break;
-    }
 }
 
 
@@ -310,8 +230,8 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
  * @param BIS
  */
 void  MainWindow::historyShow(QDateTime datatime, double RATE,double DIAP,
-                                   double SYSP,double SpO2,
-                                   double SaO2,double BIS)
+                              double SYSP,double SpO2,
+                              double SaO2,double BIS)
 {
     //key的单位是秒
     double key = datatime.toMSecsSinceEpoch()/1000.0;
@@ -494,9 +414,6 @@ void MainWindow::on_tblHisPatient_itemClicked(QTableWidgetItem *item)
                 + startTime
                 + "' AND create_time <= '" + stopTime + "'";
 
-        // strSql = "select * from patient_value where number = '1' AND create_time >= '2021-07-14 06:00:22' AND create_time <= '2021-07-29 18:00:22'";
-
-
         selectPatientValue(strSql, vecPatientValue);
 
         if (vecPatientValue.size() > 0)
@@ -529,5 +446,171 @@ void MainWindow::on_btnHisQuery_clicked()
         int curRow=ui->tblHisPatient->rowCount(); // 当前行号
         ui->tblHisPatient->insertRow(curRow); // 在表格尾部添加一行
         createItemsARow(curRow,it->strNumber,it->strAge,it->strSex);
+    }
+}
+
+void MainWindow::on_btnInfoStart_clicked()
+{
+    QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定开始录制吗？",QMessageBox::Yes|QMessageBox::No);
+    switch (result)
+    {
+    case QMessageBox::Yes:
+    {
+        QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
+        QString number = datetime->toString("yyyyMMddhhmmss") + "01"; //设置显示格式
+
+        m_number = number;
+
+        ui->txtInfoNumber->setText(number);
+
+        /**
+         * 自动保存病人编号
+         */
+        QString sex = QString::number(ui->cmbInfoSex->currentIndex());
+        if (sex == "")
+        {
+            sex = "null";
+        }
+
+        QString height = ui->txtInfoHeight->text();
+        if (height == "")
+        {
+            height = "null";
+        }
+        QString weight = ui->txtInfoWeight->text();
+        if (weight == "")
+        {
+            weight = "null";
+        }
+        QString age = ui->txtInfoAge->text();
+        if (age == "")
+        {
+            age = "null";
+        }
+
+        QString strSql = "insert into patient (number, sex, height, weight, age) values('"
+                + number + "',"
+                + sex + ","
+                + height + ","
+                + weight + ","
+                + age
+                + ")";
+
+        bool result = insertSql(strSql);
+
+
+        m_isStart = true;
+        ui->tabSmart->setCurrentIndex(1);
+        ui->btnInfoStart->setDisabled(true);
+        ui->btnInfoStop->setEnabled(true);
+
+        ui->btnInfoStart->setStyleSheet(QString::fromUtf8("width: 270px; /* \345\256\275\345\272\246 */\n"
+                                                          "	height: 40px; /* \351\253\230\345\272\246 */\n"
+                                                          "	border-width: 0px; /* \350\276\271\346\241\206\345\256\275\345\272\246 */\n"
+                                                          "	border-radius: 3px; /* \350\276\271\346\241\206\345\215\212\345\276\204 */\n"
+                                                          "	background: #B0B0B0; /* \350\203\214\346\231\257\351\242\234\350\211\262 */\n"
+                                                          "	cursor: pointer; /* \351\274\240\346\240\207\347\247\273\345\205\245\346\214\211\351\222\256\350\214\203\345\233\264\346\227\266\345\207\272\347\216\260\346\211\213\345\212\277 */\n"
+                                                          "	outline: none; /* \344\270\215\346\230\276\347\244\272\350\275\256\345\273\223\347\272\277 */\n"
+                                                          "	font-family: Microsoft YaHei; /* \350\256\276\347\275\256\345\255\227\344\275\223 */\n"
+                                                          "	color: white; /* \345\255\227\344\275\223\351\242\234\350\211\262 */\n"
+                                                          "	font-size: 15px; /* \345\255\227\344\275\223\345\244\247\345\260\217 *"));
+
+        ui->btnInfoStop->setStyleSheet(QString::fromUtf8("width: 270px; /* \345\256\275\345\272\246 */\n"
+                                                         "	height: 40px; /* \351\253\230\345\272\246 */\n"
+                                                         "	border-width: 0px; /* \350\276\271\346\241\206\345\256\275\345\272\246 */\n"
+                                                         "	border-radius: 3px; /* \350\276\271\346\241\206\345\215\212\345\276\204 */\n"
+                                                         "	background: #36648B; /* \350\203\214\346\231\257\351\242\234\350\211\262 */\n"
+                                                         "	cursor: pointer; /* \351\274\240\346\240\207\347\247\273\345\205\245\346\214\211\351\222\256\350\214\203\345\233\264\346\227\266\345\207\272\347\216\260\346\211\213\345\212\277 */\n"
+                                                         "	outline: none; /* \344\270\215\346\230\276\347\244\272\350\275\256\345\273\223\347\272\277 */\n"
+                                                         "	font-family: Microsoft YaHei; /* \350\256\276\347\275\256\345\255\227\344\275\223 */\n"
+                                                         "	color: white; /* \345\255\227\344\275\223\351\242\234\350\211\262 */\n"
+                                                         "	font-size: 15px; /* \345\255\227\344\275\223\345\244\247\345\260\217 *"));
+    }
+        break;
+    case QMessageBox::No:
+        qDebug()<<"NO";
+        break;
+    default:
+        break;
+    }
+}
+
+void MainWindow::on_btnInfoStop_clicked()
+{
+    QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定停止录制吗？",QMessageBox::Yes|QMessageBox::No);
+    switch (result)
+    {
+    case QMessageBox::Yes:
+    {
+        m_isStart = false;
+        ui->btnInfoStop->setDisabled(true);
+        ui->btnInfoStart->setEnabled(true);
+
+        ui->btnInfoStop->setStyleSheet(QString::fromUtf8("width: 270px; /* \345\256\275\345\272\246 */\n"
+                                                         "	height: 40px; /* \351\253\230\345\272\246 */\n"
+                                                         "	border-width: 0px; /* \350\276\271\346\241\206\345\256\275\345\272\246 */\n"
+                                                         "	border-radius: 3px; /* \350\276\271\346\241\206\345\215\212\345\276\204 */\n"
+                                                         "	background: #B0B0B0; /* \350\203\214\346\231\257\351\242\234\350\211\262 */\n"
+                                                         "	cursor: pointer; /* \351\274\240\346\240\207\347\247\273\345\205\245\346\214\211\351\222\256\350\214\203\345\233\264\346\227\266\345\207\272\347\216\260\346\211\213\345\212\277 */\n"
+                                                         "	outline: none; /* \344\270\215\346\230\276\347\244\272\350\275\256\345\273\223\347\272\277 */\n"
+                                                         "	font-family: Microsoft YaHei; /* \350\256\276\347\275\256\345\255\227\344\275\223 */\n"
+                                                         "	color: white; /* \345\255\227\344\275\223\351\242\234\350\211\262 */\n"
+                                                         "	font-size: 15px; /* \345\255\227\344\275\223\345\244\247\345\260\217 *"));
+
+        ui->btnInfoStart->setStyleSheet(QString::fromUtf8("width: 270px; /* \345\256\275\345\272\246 */\n"
+                                                          "	height: 40px; /* \351\253\230\345\272\246 */\n"
+                                                          "	border-width: 0px; /* \350\276\271\346\241\206\345\256\275\345\272\246 */\n"
+                                                          "	border-radius: 3px; /* \350\276\271\346\241\206\345\215\212\345\276\204 */\n"
+                                                          "	background: #36648B; /* \350\203\214\346\231\257\351\242\234\350\211\262 */\n"
+                                                          "	cursor: pointer; /* \351\274\240\346\240\207\347\247\273\345\205\245\346\214\211\351\222\256\350\214\203\345\233\264\346\227\266\345\207\272\347\216\260\346\211\213\345\212\277 */\n"
+                                                          "	outline: none; /* \344\270\215\346\230\276\347\244\272\350\275\256\345\273\223\347\272\277 */\n"
+                                                          "	font-family: Microsoft YaHei; /* \350\256\276\347\275\256\345\255\227\344\275\223 */\n"
+                                                          "	color: white; /* \345\255\227\344\275\223\351\242\234\350\211\262 */\n"
+                                                          "	font-size: 15px; /* \345\255\227\344\275\223\345\244\247\345\260\217 *"));
+    }
+        break;
+    case QMessageBox::No:
+
+        break;
+    default:
+        break;
+    }
+}
+
+void MainWindow::on_btnInfoOK_clicked()
+{
+    QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定保存吗？",QMessageBox::Yes|QMessageBox::No);
+    switch (result)
+    {
+    case QMessageBox::Yes:
+    {
+        QString number = ui->txtInfoNumber->text();
+        QString sex = QString::number(ui->cmbInfoSex->currentIndex());
+
+        QString height = ui->txtInfoHeight->text();
+        QString weight = ui->txtInfoWeight->text();
+        QString age = ui->txtInfoAge->text();
+        QString strSql = "insert into patient (number, sex, height, weight, age) values('"
+                + number + "',"
+                + sex + ","
+                + height + ","
+                + weight + ","
+                + age
+                + ")";
+
+        bool result = insertSql(strSql);
+        if (result)
+        {
+            m_number = number;
+            QMessageBox::information(NULL, "提示", "插入成功！");
+        }
+        else
+        {
+            QMessageBox::information(NULL, "提示", "插入失败！");
+        }
+    }
+        break;
+    default:
+        break;
     }
 }
