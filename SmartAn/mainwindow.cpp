@@ -73,7 +73,7 @@ bool insertSql(QString strSql)
     db.setPort(3306);                 //连接数据库端口号，与设置一致
     db.setDatabaseName("SmartAn");      //连接数据库名，与设置一致
     db.setUserName("root");          //数据库用户名，与设置一致
-    db.setPassword("123");    //数据库密码，与设置一致
+    db.setPassword("888888");    //数据库密码，与设置一致
     db.open();
     if(!db.open())
     {
@@ -94,7 +94,7 @@ bool selectPatient(QString strSql, std::vector<Patient>& vecPatient)
     db.setPort(3306);                 //连接数据库端口号，与设置一致
     db.setDatabaseName("SmartAn");      //连接数据库名，与设置一致
     db.setUserName("root");          //数据库用户名，与设置一致
-    db.setPassword("123");    //数据库密码，与设置一致
+    db.setPassword("888888");    //数据库密码，与设置一致
     db.open();
     if(!db.open())
     {
@@ -131,7 +131,7 @@ bool selectPatientValue(QString strSql, std::vector<PatientValue>& vecPatientVal
     db.setPort(3306);                 //连接数据库端口号，与设置一致
     db.setDatabaseName("SmartAn");      //连接数据库名，与设置一致
     db.setUserName("root");          //数据库用户名，与设置一致
-    db.setPassword("123");    //数据库密码，与设置一致
+    db.setPassword("888888");    //数据库密码，与设置一致
     db.open();
     if(!db.open())
     {
