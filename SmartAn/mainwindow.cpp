@@ -9,6 +9,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QGraphicsScene>
+#include "connection.h"
 
 using namespace std;
 using namespace QtCharts;
@@ -66,27 +67,6 @@ void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot, const QString& f
     customPlot->legend->setVisible(true);
 }
 
-bool insertSql(QString strSql)
-{
-    QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");      //连接数据库主机名，这里需要注意（若填的为”127.0.0.1“，出现不能连接，则改为localhost)
-    db.setPort(3306);                 //连接数据库端口号，与设置一致
-    db.setDatabaseName("SmartAn");      //连接数据库名，与设置一致
-    db.setUserName("root");          //数据库用户名，与设置一致
-    db.setPassword("888888");    //数据库密码，与设置一致
-    db.open();
-    if(!db.open())
-    {
-        return false;
-    }
-    else
-    {
-        QSqlQuery query(db);
-        return query.exec(strSql);
-    }
-
-}
-
 bool selectPatient(QString strSql, std::vector<Patient>& vecPatient)
 {
     QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
@@ -111,7 +91,27 @@ bool selectPatient(QString strSql, std::vector<Patient>& vecPatient)
                 continue;
             paient.strAge= result.value("age").toString();
             int nsex = result.value("sex").toInt();
-            paient.strSex = nsex == 0 ? "男":"女";
+            paient.strSex = "";
+            switch (nsex) {
+            case 0:
+            {
+                paient.strSex = "未知";
+            }
+                break;
+            case 1:
+            {
+                paient.strSex = "男";
+            }
+                break;
+            case 2:
+            {
+                paient.strSex= "女";
+            }
+                break;
+            default:
+                break;
+            }
+
             vecPatient.push_back(paient);
         }
     }
@@ -163,7 +163,7 @@ bool selectPatientValue(QString strSql, std::vector<PatientValue>& vecPatientVal
 
 void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
                                    double SYSP,double SpO2,
-                                   double SaO2,double BIS)
+                                   double BIS)
 {
     //key的单位是秒
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
@@ -231,9 +231,9 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
  */
 void  MainWindow::historyShow(QDateTime datatime, double RATE,double DIAP,
                               double SYSP,double SpO2,
-                              double SaO2,double BIS)
+                              double BIS)
 {
-    //key的单位是秒
+    // key的单位是秒
     double key = datatime.toMSecsSinceEpoch()/1000.0;
     qsrand(QTime::currentTime().msec() + QTime::currentTime().second() * 10000);
 
@@ -302,27 +302,26 @@ void MainWindow::recvmsg(QVariant DataVar, QString strcontent)
 
 
         QDateTime currentDateTime =QDateTime::currentDateTime();
-        QString strSql = "insert into patient_value (number, create_time, RATE, DIAP, SYSP, SpO2, SaO2, BIS) values ('"
+        QString strSql = "insert into patient_value (number, create_time, RATE, DIAP, SYSP, SpO2, BIS) values ('"
                 + m_number + "', '"
                 + currentDateTime.toString("yyyy-MM-dd hh:mm:ss") + "', "
                 + QString::number(pmsg->RATE) + ", "
                 + QString::number(pmsg->DIAP) + ", "
                 + QString::number(pmsg->SYSP) + ", "
                 + QString::number(pmsg->SpO2) + ", "
-                + QString::number(pmsg->SaO2) + ", "
+
                 + QString::number(pmsg->BIS)
                 + ")";
 
         insertSql(strSql);
 
         realtimeDataSlot(pmsg->RATE, pmsg->DIAP,
-                         pmsg->SYSP, pmsg->SpO2,
-                         pmsg->SaO2, pmsg->BIS);
+                         pmsg->SYSP, pmsg->SpO2, pmsg->BIS);
         delete pmsg;
     }
 }
 
-void MainWindow::CreateChart(QHBoxLayout *qHBoxLayout)
+void MainWindow::createChart(QHBoxLayout *qHBoxLayout)
 {
     //创建图表
     QChartView* chartView = new QChartView(this);
@@ -420,7 +419,7 @@ void MainWindow::on_tblHisPatient_itemClicked(QTableWidgetItem *item)
         {
             for (auto it = vecPatientValue.begin(); it != vecPatientValue.end(); ++it)
             {
-                historyShow(it->strCreateTime,it->RATE,it->DIAP,it->SYSP,it->SpO2,it->SaO2,it->BIS);
+                historyShow(it->strCreateTime,it->RATE,it->DIAP,it->SYSP,it->SpO2,it->BIS);
             }
         }
 
@@ -449,6 +448,9 @@ void MainWindow::on_btnHisQuery_clicked()
     }
 }
 
+/**
+ * @brief 开始录制点击事件
+ */
 void MainWindow::on_btnInfoStart_clicked()
 {
     QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定开始录制吗？",QMessageBox::Yes|QMessageBox::No);
@@ -488,13 +490,15 @@ void MainWindow::on_btnInfoStart_clicked()
             age = "null";
         }
 
-        QString strSql = "insert into patient (number, sex, height, weight, age) values('"
+        QString strSql = "INSERT INTO patient (number, sex, height, weight, age, recordDate, recordTime) VALUES('"
                 + number + "',"
                 + sex + ","
                 + height + ","
                 + weight + ","
-                + age
-                + ")";
+                + age + ", '"
+                + datetime->toString("yyyy-MM-dd") + "', '"
+                + datetime->toString("yyyy-MM-dd hh:mm:ss")
+                + "')";
 
         bool result = insertSql(strSql);
 

@@ -1,4 +1,4 @@
-#include "mythread.hpp"
+#include "messagethread.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
@@ -13,7 +13,7 @@
 #include <iostream>
 #include <QDebug>
 #include "mainwindow.h"
-#include "Anesthesia.h"
+#include "anesthesia.h"
 
 #define PORT 7000
 #define QUEUE 20//连接请求队列
@@ -26,26 +26,26 @@ int sendData(int socket,const char* strdata,int nlen)
 
 }
 
-MyThread::MyThread()
+MessageThread::MessageThread()
 {
 
 }
-void MyThread::setParent(QMainWindow* pthat)
+void MessageThread::setParent(QMainWindow* pthat)
 {
     m_pParent = pthat;
 }
-void MyThread::run()
+void MessageThread::run()
 {
-    int sock_cli = socket(AF_INET, SOCK_STREAM, 0);//若成功则返回一个sockfd（套接字描述符）
+    int sock_cli = socket(AF_INET, SOCK_STREAM, 0); // 若成功则返回一个sockfd（套接字描述符）
     //printf("%d\n",ss);
     ///定义sockaddr_in
     struct sockaddr_in servaddr;
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
-    servaddr.sin_port = htons(PORT);  //服务器端口
-    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");  //服务器ip，inet_addr用于IPv4的IP转换（十进制转换为二进制）
+    servaddr.sin_port = htons(PORT);  // 服务器端口
+    servaddr.sin_addr.s_addr = inet_addr("127.0.0.1");  // 服务器ip，inet_addr用于IPv4的IP转换（十进制转换为二进制）
 
-    while(1)
+    while(true)
     {
         if (::connect(sock_cli, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0)
         {
@@ -58,7 +58,7 @@ void MyThread::run()
         }
     }
     char buffer[1024];
-    while(1)
+    while(true)
     {
         memset(buffer, 0 ,sizeof(buffer));
         int len = ::recv(sock_cli, buffer, 4, 0);//从TCP连接的另一端接收数据。

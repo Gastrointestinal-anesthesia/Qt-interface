@@ -9,9 +9,9 @@
 #include <QVariant>
 #include <QMetaType>
 #include <string>
-#include "mythread.hpp"
+#include "messagethread.hpp"
 #include "qcustomplot.h"
-#include "Anesthesia.h"
+#include "anesthesia.h"
 using namespace std;
 namespace Ui {
 class MainWindow;
@@ -21,20 +21,27 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 private:
-     enum   CellType{ctNum=1000,ctAge,ctSex}; //各单元格的类型
+    enum   CellType{ctNum=1000,ctAge,ctSex}; //各单元格的类型
     enum    FieldColNum{colNum=0, colAge,colSex};
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
-    void    CreateChart(QHBoxLayout *qHBoxLayout);
-    // 设置qcustomplot画图属性，实时
+    void createChart(QHBoxLayout *qHBoxLayout);
+    // 设置 qcustomplot 画图属性，实时
     void setupRealtimeDataDemo(QCustomPlot *customPlot, const QString &, const QString &);
-    void realtimeDataSlot(double RATE, double DIAP, double SYSP, double SpO2, double SaO2, double BIS);
+    void realtimeDataSlot(double RATE, double DIAP, double SYSP, double SpO2, double BIS);
+
     void sendData( smart_topic::Anesthesia* pData);
+
+    //
     void historyShow(QDateTime datatime,double RATE,double DIAP,
                      double SYSP,double SpO2,
-                     double SaO2,double BIS);
+                     double BIS);
+
+    // 根据分辨率自适应尺寸
+    void autoResize();
+
 
 private slots:
     // 添加实时数据槽
@@ -58,7 +65,7 @@ private:
     Ui::MainWindow *ui;
     QGraphicsScene *scene;
     QTimer dataTimer;
-    MyThread m_thread;
+    MessageThread m_thread;
 
     bool m_isStart = false;
     QString m_number = "";

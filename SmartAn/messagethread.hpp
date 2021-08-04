@@ -7,13 +7,13 @@
 #include <QVariant>
 
 
-class MyThread: public QThread
+class MessageThread: public QThread
 {
   //Q_OBJECT
 
 
 public:
-  MyThread();
+  MessageThread();
   void setParent(QMainWindow*);
 protected:
     void run() ;
@@ -21,4 +21,4 @@ private:
     QMainWindow* m_pParent;
 };
 
-#endif // MYTHREAD_H
+#endif // MESSAGETHREAD_H

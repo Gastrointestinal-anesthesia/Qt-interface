@@ -28,13 +28,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-        mythread.cpp \
+        messagethread.cpp \
         qcustomplot.cpp
 
 HEADERS += \
-        Anesthesia.h \
+        anesthesia.h \
+        connection.h \
         mainwindow.h \
-        mythread.hpp \
+        messagethread.hpp \
         qcustomplot.h
 
 FORMS += \
@@ -44,4 +45,6 @@ RESOURCES += \
     icon.qrc
 
 DISTFILES += \
-    ../../test.jpg
+    ../../test.jpg \
+    config.ini \
+    screen.jpg
