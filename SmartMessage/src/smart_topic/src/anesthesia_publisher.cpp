@@ -52,7 +52,7 @@ int main(int argc, char **argv)
     // 发布消息
     anesthesia_info_pub.publish(anesthesia_msg);
 
-    ROS_INFO("Publish Anesthesia Info: RATE:%d  DIAP:%d  SYSP:%d  SpO2:%d  SaO2:%d  BIS:%d",
+    ROS_INFO("Publish Anesthesia Info: RATE:%d  DIAP:%d  SYSP:%d  SpO2:%d  BIS:%d",
              anesthesia_msg.RATE, anesthesia_msg.DIAP,
              anesthesia_msg.SYSP, anesthesia_msg.SpO2,
              anesthesia_msg.BISr);
