@@ -26,6 +26,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #LIBS += /opt/ros/kinetic/lib
 
 SOURCES += \
+        auto_resize.cpp \
         main.cpp \
         mainwindow.cpp \
         message_thread.cpp \
@@ -33,6 +34,7 @@ SOURCES += \
 
 HEADERS += \
         anesthesia.h \
+        auto_resize.h \
         connection.h \
         entity.h \
         mainwindow.h \

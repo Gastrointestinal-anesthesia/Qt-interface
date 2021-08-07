@@ -9,20 +9,33 @@
 #include <QVariant>
 #include <QMetaType>
 #include <string>
+#include <map>
 #include "message_thread.hpp"
 #include "qcustomplot.h"
 #include "anesthesia.h"
+#include "auto_resize.h"
 using namespace std;
 namespace Ui {
 class MainWindow;
 }
-
+struct childpos
+{
+public:
+    childpos() {}
+public:
+    int x;
+    int y;
+    int width;
+    int height;
+    int parentwidth;
+    int parentheight;
+};
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
 private:
-    enum   CellType{ctNum=1000,ctAge,ctSex}; //各单元格的类型
-    enum    FieldColNum{colNum=0, colAge,colSex};
+    enum  CellType{ ctNum=1000, ctAge, ctSex }; // 各单元格的类型
+    enum  FieldColNum{ colNum=0, colAge, colSex };
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -41,8 +54,10 @@ public:
 
     // 根据分辨率自适应尺寸
     void autoResize();
+    void initHiDpi();
+    void initchildposscale();
 
-
+    virtual void resizeEvent(QResizeEvent *event);
 private slots:
     // 添加实时数据槽
     void createItemsARow(int rowNo,QString Strnum,QString Age,QString Sex); // 为某一行创建items
@@ -58,10 +73,15 @@ private slots:
     void on_btnInfoStop_clicked();
 
 signals:
-    void mySignal(QVariant ,QString );     // 信号只能声明不能定义
+    void messageSignal(QVariant, QString);     // 信号只能声明不能定义
 public slots:
-    void recvmsg(QVariant ,  QString);
+    void recvMsg(QVariant, QString);
+    void caluteDpi();
+
+    void dpichanged();
 private:
+    const int invalid = -1; // 约定无效值
+
     Ui::MainWindow *ui;
     QGraphicsScene *scene;
     QTimer dataTimer;
@@ -69,6 +89,14 @@ private:
 
     bool m_isStart = false;
     QString m_number = "";
+private:
+    //自定义界面变量
+    AutoResize *m_autoResizeHandler;
+    float m_fWidthScale;
+    float m_fHeightScale;
+    std::map<QWidget*,childpos> m_mapChildScale;
+     std::map<QWidget*,childpos> m_mapChildScale_his;
+
 };
 
 

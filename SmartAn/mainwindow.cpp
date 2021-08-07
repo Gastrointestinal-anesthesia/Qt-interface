@@ -23,28 +23,44 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    setupRealtimeData(ui->widgetRATE, "心率", "");
+    setupRealtimeData(ui->widgetRATE, "心率", "血氧");
     setupRealtimeData(ui->widgetPressure, "舒张压", "收缩压");
-    setupRealtimeData(ui->widgetBIS, "血氧", "BISr");
+    setupRealtimeData(ui->widgetBIS, "BISr", "");
 
     setupRealtimeData(ui->widgetHisPressure, "舒张压", "收缩压");
     setupRealtimeData(ui->widgetHisBIS, "血氧", "BISr");
 
     ui->widgetPressure->replot();
-    connect(this, SIGNAL(mySignal(QVariant, QString)), this, SLOT(recvmsg(QVariant, QString)), Qt::QueuedConnection);
-    m_thread.setObjectName("recvmsg");
+    connect(this, SIGNAL(messageSignal(QVariant, QString)), this, SLOT(recvMsg(QVariant, QString)), Qt::QueuedConnection);
+    m_thread.setObjectName("recvMsg");
     m_thread.setParent(this);
-    m_thread.start();
-    QDateTime currentDateTime =QDateTime::currentDateTime();
+    //m_thread.start();
+    QDateTime currentDateTime = QDateTime::currentDateTime();
     ui->dateHisStartTime->setDateTime(currentDateTime);
     ui->dateHisStopTime->setDateTime(currentDateTime);
+    QDesktopWidget *desktopwidget = QApplication::desktop();
+    connect(desktopwidget,SIGNAL(resized(int)),this,SLOT(dpichanged()));
+    //m_autoResizeHandler=new AutoResize(this,this->rect().width(),this->rect().height());
+    //先与要自适应的枚举量控件进行或运算算出值
+    //m_autoResizeHandler->setAutoResizeFlag(
+    //           AutoResize::INCLUDE_BUTTON|AutoResize::INCLUDE_COMBOBOX|
+    //           AutoResize::INCLUDE_EDITOR|AutoResize::INCLUDE_LABEL
+    //          );
+    // m_autoResizeHandler->addOtherItem(ui->frame);
+    //m_autoResizeHandler->pushAllResizeItem();
+    initHiDpi();
 }
 
-// 画图初始化
+/**
+ * @brief 画图初始化
+ * @param customPlot
+ * @param first
+ * @param second
+ */
 void MainWindow::setupRealtimeData(QCustomPlot *customPlot, const QString& first, const QString& second)
 {
     customPlot->addGraph(); // blue line
-    customPlot->graph(0)->setPen(QPen(Qt::darkGreen));
+    customPlot->graph(0)->setPen(QPen(QColor(200, 0, 0)));
     customPlot->graph(0)->setName(first);
     //customPlot->graph(0)->setBrush(QBrush(QColor(240, 255, 200)));
     //customPlot->graph(0)->setAntialiasedFill(false);
@@ -70,8 +86,6 @@ void MainWindow::setupRealtimeData(QCustomPlot *customPlot, const QString& first
     // dataTimer.start(2000); // Interval 0 means to refresh as fast as possible
     customPlot->legend->setVisible(true);
 }
-
-
 
 void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
                                    double SYSP,double SpO2,
@@ -211,17 +225,128 @@ void  MainWindow::historyShow(QDateTime datatime, double RATE,double DIAP,
     ui->widgetHisBIS->replot();
 }
 
+void MainWindow::initHiDpi()
+{
+#ifdef Q_OS_LINUX
+    bool defaultEnableHiDPI = false;
+#else
+    bool defaultEnableHiDPI = true;
+#endif
 
+    if (defaultEnableHiDPI) {
+        QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
+        QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    } else
+        QApplication::setAttribute(Qt::AA_Use96Dpi);
+}
 
+void MainWindow::dpichanged()
+{
+    qDebug()<<"dpichanged"<<endl;
+    //m_autoResizeHandler->doAutoResize();
+    int currentScreenWidth = QApplication::desktop()->width();
+    int currentScreenHeight = QApplication::desktop()->height();
+    qDebug()<<"dpiwidth ="<< currentScreenWidth << "dpiheight = "<<currentScreenHeight<< endl;
+    int wide = currentScreenWidth * m_fWidthScale;
+    int height = currentScreenHeight * m_fHeightScale;
+    this->resize(wide,height);
+    caluteDpi();
+}
+
+void MainWindow::caluteDpi()
+{
+    int wide = this->width();
+    int height = this->height();
+    int currentScreenWidth = QApplication::desktop()->width();
+    int currentScreenHeight = QApplication::desktop()->height();
+    m_fWidthScale = (float)wide/currentScreenWidth;
+    m_fHeightScale = (float)height/currentScreenHeight;;
+    qDebug()<<"dpiwidth ="<< currentScreenWidth << "dpiheight = "<<currentScreenHeight<< endl;
+}
+void MainWindow::initchildposscale()
+{
+
+    QList<QWidget*> widgetList = ui->tabMonitor->findChildren<QWidget *>();
+    QList<QWidget*> widgetList2 = ui->tabHistoryData->findChildren<QWidget *>();
+    int wide = this->width();
+    int height = this->height();
+    for (auto it = widgetList.begin(); it != widgetList.end(); ++it )
+    {
+        childpos pos;
+        auto posnew = (*it)->geometry();
+        pos.x = posnew.left();
+        pos.y = posnew.top();
+        pos.width = posnew.width();
+        pos.height = posnew.height();
+        pos.parentheight = height;
+        pos.parentwidth = wide;
+        m_mapChildScale.insert(std::make_pair(*it,pos));
+    }
+    for (auto it = widgetList2.begin(); it != widgetList2.end(); ++it )
+    {
+        childpos pos;
+        auto posnew = (*it)->geometry();
+        pos.x = posnew.left();
+        pos.y = posnew.top();
+        pos.width = posnew.width();
+        pos.height = posnew.height();
+        pos.parentheight = height;
+        pos.parentwidth = wide;
+        m_mapChildScale_his.insert(std::make_pair(*it,pos));
+    }
+}
+
+void  MainWindow::resizeEvent(QResizeEvent *event)
+{
+    qDebug()<<"MainWindow::resizeEvent"<<endl;
+
+    QList<QWidget*> widgetList = ui->tabMonitor->findChildren<QWidget *>();
+    int wide = this->width();
+    int height = this->height();
+    for (auto it = widgetList.begin(); it != widgetList.end(); ++it )
+    {
+        auto mit = m_mapChildScale.find(*it);
+        if(mit != m_mapChildScale.end())
+        {
+            float pos_x_scale = (float)mit->second.x /mit->second.parentwidth;
+            float pos_y_scale = (float)mit->second.y /mit->second.parentheight;
+            float size_x_scale = (float)mit->second.width /mit->second.parentwidth;
+            float size_y_scale = (float)mit->second.height /mit->second.parentheight;
+            int pos_x_new = wide* pos_x_scale;
+            int pos_y_new = height* pos_y_scale;
+            int size_x_new = wide* size_x_scale;
+            int size_y_new = height* size_y_scale;
+            (*it)->setGeometry(QRect(pos_x_new, pos_y_new, size_x_new, size_y_new));
+        }
+    }
+    QList<QWidget*> widgetList2 = ui->tabHistoryData->findChildren<QWidget *>();
+    for (auto it = widgetList2.begin(); it != widgetList2.end(); ++it )
+    {
+        auto mit = m_mapChildScale_his.find(*it);
+        if(mit != m_mapChildScale_his.end())
+        {
+            float pos_x_scale = (float)mit->second.x /mit->second.parentwidth;
+            float pos_y_scale = (float)mit->second.y /mit->second.parentheight;
+            float size_x_scale = (float)mit->second.width /mit->second.parentwidth;
+            float size_y_scale = (float)mit->second.height /mit->second.parentheight;
+            int pos_x_new = wide* pos_x_scale;
+            int pos_y_new = height* pos_y_scale;
+            int size_x_new = wide* size_x_scale;
+            int size_y_new = height* size_y_scale;
+            (*it)->setGeometry(QRect(pos_x_new, pos_y_new, size_x_new, size_y_new));
+        }
+    }
+
+}
 void MainWindow::sendData( smart_topic::Anesthesia* pData)
 {
     void* naddress = pData;
     QVariant DataVar;
     DataVar.setValue(naddress); // 数据包装
-    emit mySignal(DataVar, QString(""));
+    emit messageSignal(DataVar, QString(""));
 }
 
-void MainWindow::recvmsg(QVariant DataVar, QString strcontent)
+void MainWindow::recvMsg(QVariant DataVar, QString strcontent)
 {
     if (m_isStart)
     {

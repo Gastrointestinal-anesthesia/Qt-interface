@@ -47,9 +47,6 @@ int main(int argc, char **argv)
   // 创建一个Subscriber，订阅名为/anesthesia_info的topic，注册回调函数 anesthesiaInfoCallback
   ros::Subscriber anesthesia_info_sub = n.subscribe("/anesthesia_publisher0", 10, anesthesiaInfoCallback);
 
-  // 创建一个Subscriber，订阅名为/anesthesia_info0的topic，注册回调函数 anesthesiaInfoCallback
-  ros::Subscriber anesthesia_info_sub = n.subscribe("/anesthesia_info0", 10, anesthesiaInfoCallback);
-
   g_thread.start();
   // 循环等待回调函数
   ros::spin();

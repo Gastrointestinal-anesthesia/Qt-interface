@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 #if (QT_VERSION >= QT_VERSION_CHECK(5,9,0))
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
-
+     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication a(argc, argv);
 
     QString filePath = QCoreApplication::applicationDirPath();
@@ -91,6 +91,7 @@ int main(int argc, char *argv[])
     MainWindow w;
 
     w.show();
-
+    w.initchildposscale();
+    w.caluteDpi();
     return a.exec();
 }
