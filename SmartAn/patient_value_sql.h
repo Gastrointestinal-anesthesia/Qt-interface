@@ -1,0 +1,4 @@
+#ifndef PATIENT_VALUE_SQL_H
+#define PATIENT_VALUE_SQL_H
+
+#endif // PATIENT_VALUE_SQL_H
