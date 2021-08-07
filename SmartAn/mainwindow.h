@@ -9,7 +9,7 @@
 #include <QVariant>
 #include <QMetaType>
 #include <string>
-#include "messagethread.hpp"
+#include "message_thread.hpp"
 #include "qcustomplot.h"
 #include "anesthesia.h"
 using namespace std;
@@ -29,7 +29,7 @@ public:
 
     void createChart(QHBoxLayout *qHBoxLayout);
     // 设置 qcustomplot 画图属性，实时
-    void setupRealtimeDataDemo(QCustomPlot *customPlot, const QString &, const QString &);
+    void setupRealtimeData(QCustomPlot *customPlot, const QString &, const QString &);
     void realtimeDataSlot(double RATE, double DIAP, double SYSP, double SpO2, double BIS);
 
     void sendData( smart_topic::Anesthesia* pData);
@@ -70,27 +70,6 @@ private:
     bool m_isStart = false;
     QString m_number = "";
 };
-
-typedef struct patient
-{
-    QString strNumber;
-    QString strAge;
-    QString strSex;
-
-}Patient;
-
-typedef struct patient_value
-{
-    QString strNumber;
-    QDateTime strCreateTime;
-    int RATE;
-    int DIAP;
-    int SYSP;
-    int SpO2;
-    int SaO2;
-    int BIS;
-
-}PatientValue;
 
 
 #endif // MAINWINDOW_H

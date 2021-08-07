@@ -9,7 +9,10 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QGraphicsScene>
+#include "entity.h"
 #include "connection.h"
+#include "patient_sql.h"
+#include "patient_value_sql.h"
 
 using namespace std;
 using namespace QtCharts;
@@ -20,11 +23,12 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    setupRealtimeDataDemo(ui->widgetPressure, "舒张压", "收缩压");
-    setupRealtimeDataDemo(ui->widgetBIS, "血氧", "BIS");
+    setupRealtimeData(ui->widgetRATE, "心率", "");
+    setupRealtimeData(ui->widgetPressure, "舒张压", "收缩压");
+    setupRealtimeData(ui->widgetBIS, "血氧", "BISr");
 
-    setupRealtimeDataDemo(ui->widgetHisPressure, "舒张压", "收缩压");
-    setupRealtimeDataDemo(ui->widgetHisBIS, "血氧", "BIS");
+    setupRealtimeData(ui->widgetHisPressure, "舒张压", "收缩压");
+    setupRealtimeData(ui->widgetHisBIS, "血氧", "BISr");
 
     ui->widgetPressure->replot();
     connect(this, SIGNAL(mySignal(QVariant, QString)), this, SLOT(recvmsg(QVariant, QString)), Qt::QueuedConnection);
@@ -37,7 +41,7 @@ MainWindow::MainWindow(QWidget *parent) :
 }
 
 // 画图初始化
-void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot, const QString& first, const QString& second)
+void MainWindow::setupRealtimeData(QCustomPlot *customPlot, const QString& first, const QString& second)
 {
     customPlot->addGraph(); // blue line
     customPlot->graph(0)->setPen(QPen(Qt::darkGreen));
@@ -67,112 +71,39 @@ void MainWindow::setupRealtimeDataDemo(QCustomPlot *customPlot, const QString& f
     customPlot->legend->setVisible(true);
 }
 
-bool selectPatient(QString strSql, std::vector<Patient>& vecPatient)
-{
-    QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");      //连接数据库主机名，这里需要注意（若填的为”127.0.0.1“，出现不能连接，则改为localhost)
-    db.setPort(3306);                 //连接数据库端口号，与设置一致
-    db.setDatabaseName("SmartAn");      //连接数据库名，与设置一致
-    db.setUserName("root");          //数据库用户名，与设置一致
-    db.setPassword("888888");    //数据库密码，与设置一致
-    db.open();
-    if(!db.open())
-    {
-        return false;
-    }
-    else
-    {
-        QSqlQuery result = db.exec(strSql);
-        while(result.next())
-        {
-            Patient paient;
-            paient.strNumber = result.value("number").toString();
-            if (paient.strNumber.length() <= 0)
-                continue;
-            paient.strAge= result.value("age").toString();
-            int nsex = result.value("sex").toInt();
-            paient.strSex = "";
-            switch (nsex) {
-            case 0:
-            {
-                paient.strSex = "未知";
-            }
-                break;
-            case 1:
-            {
-                paient.strSex = "男";
-            }
-                break;
-            case 2:
-            {
-                paient.strSex= "女";
-            }
-                break;
-            default:
-                break;
-            }
-
-            vecPatient.push_back(paient);
-        }
-    }
-
-}
-
-/**
- * @brief selectPatientValue
- * @param strSql
- * @param vecPatientValue
- * @return
- */
-bool selectPatientValue(QString strSql, std::vector<PatientValue>& vecPatientValue)
-{
-    QSqlDatabase db=QSqlDatabase::addDatabase("QMYSQL");
-    db.setHostName("localhost");      //连接数据库主机名，这里需要注意（若填的为”127.0.0.1“，出现不能连接，则改为localhost)
-    db.setPort(3306);                 //连接数据库端口号，与设置一致
-    db.setDatabaseName("SmartAn");      //连接数据库名，与设置一致
-    db.setUserName("root");          //数据库用户名，与设置一致
-    db.setPassword("888888");    //数据库密码，与设置一致
-    db.open();
-    if(!db.open())
-    {
-        return false;
-    }
-    else
-    {
-        QSqlQuery result = db.exec(strSql);
-        while(result.next())
-        {
-            PatientValue patientValue;
-            patientValue.strNumber = result.value("number").toString();
-            if(patientValue.strNumber.length()<= 0)
-                continue;
-            patientValue.RATE= result.value("RATE").toInt();
-            patientValue.DIAP= result.value("DIAP").toInt();
-            patientValue.SYSP= result.value("SYSP").toInt();
-            patientValue.SpO2= result.value("SpO2").toInt();
-            patientValue.SaO2= result.value("SaO2").toInt();
-            patientValue.BIS= result.value("BIS").toInt();
-            patientValue.strCreateTime= result.value("create_time").toDateTime();
-
-            vecPatientValue.push_back(patientValue);
-        }
-    }
-
-}
 
 
 void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
                                    double SYSP,double SpO2,
-                                   double BIS)
+                                   double BISr)
 {
     //key的单位是秒
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
     qsrand(QTime::currentTime().msec() + QTime::currentTime().second() * 10000);
 
-    // if (ui->checkBox_temp->isChecked())
-    ui->widgetPressure->graph(0)->addData(key, RATE);//添加数据1到曲线1
-    // if (ui->checkBox_hui->isChecked())
-    ui->widgetPressure->graph(1)->addData(key, DIAP);//添加数据2到曲线2
+
+    ui->widgetRATE->graph(0)->addData(key, RATE);//添加数据1到曲线1
+
+    //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
+    //才能起到想要的效果，可以调整这两个值，观察显示的效果。
+    ui->widgetPressure->graph(0)->removeDataBefore(key-60);
+
+    //自动设定graph(1)曲线y轴的范围，如果不设定，有可能看不到图像
+    //也可以用ui->widgetPressure->yAxis->setRange(up,low)手动设定y轴范围
+    ui->widgetPressure->graph(0)->rescaleValueAxis();
+
+    //这里的8，是指横坐标时间宽度为8秒，如果想要横坐标显示更多的时间
+    //就把8调整为比较大到值，比如要显示60秒，那就改成60。
+    //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
+    ui->widgetPressure->yAxis->setRange(0, 100);
+    ui->widgetPressure->xAxis->setRange(key+0.25, 60, Qt::AlignRight);//设定x轴的范围
+    ui->widgetPressure->replot();
+
+
+    /*******************************************************/
+
+    ui->widgetPressure->graph(0)->addData(key, DIAP);//添加数据1到曲线1
+    ui->widgetPressure->graph(1)->addData(key, SYSP);//添加数据2到曲线2
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
     ui->widgetPressure->graph(0)->removeDataBefore(key-60);
@@ -192,11 +123,8 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
 
 
     /*******************************************************/
-
-    // if (ui->checkBox_temp->isChecked())
     ui->widgetBIS->graph(0)->addData(key, SpO2);//添加数据1到曲线1
-    // if (ui->checkBox_hui->isChecked())
-    ui->widgetBIS->graph(1)->addData(key, BIS);//添加数据2到曲线2
+    ui->widgetBIS->graph(1)->addData(key, BISr);//添加数据2到曲线2
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
     ui->widgetBIS->graph(0)->removeDataBefore(key-60);
@@ -217,7 +145,7 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
     ui->lblDIAPCurrentVal->setText(QString::number(DIAP));
     ui->lblSYSPCurrentVal->setText(QString::number(SYSP));
     ui->lblSpO2CurrentVal->setText(QString::number(SpO2));
-    ui->lblBISCurrentVal->setText(QString::number(BIS));
+    ui->lblBISCurrentVal->setText(QString::number(BISr));
 }
 
 /**
@@ -302,21 +230,22 @@ void MainWindow::recvmsg(QVariant DataVar, QString strcontent)
 
 
         QDateTime currentDateTime =QDateTime::currentDateTime();
-        QString strSql = "insert into patient_value (number, create_time, RATE, DIAP, SYSP, SpO2, BIS) values ('"
+
+
+        QString strSql = "insert into patient_value (number, create_time, RATE, DIAP, SYSP, SpO2, BISr) values ('"
                 + m_number + "', '"
                 + currentDateTime.toString("yyyy-MM-dd hh:mm:ss") + "', "
                 + QString::number(pmsg->RATE) + ", "
                 + QString::number(pmsg->DIAP) + ", "
                 + QString::number(pmsg->SYSP) + ", "
                 + QString::number(pmsg->SpO2) + ", "
-
-                + QString::number(pmsg->BIS)
+                + QString::number(pmsg->BISr)
                 + ")";
 
         insertSql(strSql);
 
         realtimeDataSlot(pmsg->RATE, pmsg->DIAP,
-                         pmsg->SYSP, pmsg->SpO2, pmsg->BIS);
+                         pmsg->SYSP, pmsg->SpO2, pmsg->BISr);
         delete pmsg;
     }
 }
@@ -419,7 +348,7 @@ void MainWindow::on_tblHisPatient_itemClicked(QTableWidgetItem *item)
         {
             for (auto it = vecPatientValue.begin(); it != vecPatientValue.end(); ++it)
             {
-                historyShow(it->strCreateTime,it->RATE,it->DIAP,it->SYSP,it->SpO2,it->BIS);
+                historyShow(it->strCreateTime,it->RATE,it->DIAP,it->SYSP,it->SpO2,it->BISr);
             }
         }
 
@@ -459,11 +388,12 @@ void MainWindow::on_btnInfoStart_clicked()
     case QMessageBox::Yes:
     {
         QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
-        QString number = datetime->toString("yyyyMMddhhmmss") + "01"; //设置显示格式
+        int number = getMaxPatientNumber();
+        number += 1;; // 设置显示格式
 
-        m_number = number;
+        m_number = QString::number(number);
 
-        ui->txtInfoNumber->setText(number);
+        ui->txtInfoNumber->setText(m_number);
 
         /**
          * 自动保存病人编号
@@ -490,8 +420,10 @@ void MainWindow::on_btnInfoStart_clicked()
             age = "null";
         }
 
+
+
         QString strSql = "INSERT INTO patient (number, sex, height, weight, age, recordDate, recordTime) VALUES('"
-                + number + "',"
+                + m_number + "',"
                 + sex + ","
                 + height + ","
                 + weight + ","

@@ -166,7 +166,7 @@ add_executable(anesthesia_publisher src/anesthesia_publisher.cpp  )
 target_link_libraries(anesthesia_publisher ${catkin_LIBRARIES})
 add_dependencies(anesthesia_publisher ${PROJECT_NAME}_generate_messages_cpp)
 
-add_executable(anesthesia_subscriber src/anesthesia_subscriber.cpp  src/mythread.cpp)
+add_executable(anesthesia_subscriber src/anesthesia_subscriber.cpp  src/messagethread.cpp)
 target_link_libraries(anesthesia_subscriber ${catkin_LIBRARIES})
 add_dependencies(anesthesia_subscriber ${PROJECT_NAME}_generate_messages_cpp)
 

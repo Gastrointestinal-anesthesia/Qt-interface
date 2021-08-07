@@ -514,7 +514,7 @@ font-size: 15px; </string>
        <string/>
       </property>
      </widget>
-     <widget class="QCustomPlot" name="widgetPressure_2" native="true">
+     <widget class="QCustomPlot" name="widgetRATE" native="true">
       <property name="geometry">
        <rect>
         <x>1030</x>

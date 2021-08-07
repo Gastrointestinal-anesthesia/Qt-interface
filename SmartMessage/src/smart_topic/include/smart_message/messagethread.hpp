@@ -4,10 +4,10 @@
 #include <vector>
 
 int sendData(int socket,const char* strdata,int nlen);
-class MyThread
+class MessageThread
 {
 public:
-  MyThread();
+  MessageThread();
 public:
   std::vector<int> m_vecClientSocket;
 public:

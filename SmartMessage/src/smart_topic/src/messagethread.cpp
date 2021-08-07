@@ -1,4 +1,4 @@
-#include "../include/smart_message/mythread.hpp"
+#include "../include/smart_message/messagethread.hpp"
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <stdio.h>
@@ -25,18 +25,18 @@ int sendData(int socket,const char* strdata,int nlen)
   
 }
 
-MyThread::MyThread()
+MessageThread::MessageThread()
 {
   
 }
 
-void MyThread::start()
+void MessageThread::start()
 {
   pthread_t tid1;
   int rc1=0;
   rc1 = pthread_create(&tid1, NULL, thread1, this);
 }
-void MyThread::run()
+void MessageThread::run()
 {
   int ss = socket(AF_INET, SOCK_STREAM, 0);//若成功则返回一个sockfd（套接字描述符）
   //printf("%d\n",ss);
@@ -78,7 +78,7 @@ void MyThread::run()
 }
 void* thread1(void* pthis)
 {
-  MyThread* pthat = (MyThread* )pthis;
+  MessageThread* pthat = (MessageThread* )pthis;
   pthat->run();
 }
 

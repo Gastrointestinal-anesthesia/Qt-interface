@@ -28,14 +28,17 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-        messagethread.cpp \
+        message_thread.cpp \
         qcustomplot.cpp
 
 HEADERS += \
         anesthesia.h \
         connection.h \
+        entity.h \
         mainwindow.h \
-        messagethread.hpp \
+        message_thread.hpp \
+        patient_sql.h \
+        patient_value_sql.h \
         qcustomplot.h
 
 FORMS += \

@@ -1,0 +1,7 @@
+1、打开 roscore
+
+2、修改python解释器路径  /usr/bin/python3
+
+3、安装 sudo apt-get install python3-pip
+
+4、pip install hl7parser    pip install pandas
