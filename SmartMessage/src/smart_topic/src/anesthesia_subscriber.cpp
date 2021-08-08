@@ -20,7 +20,7 @@ void anesthesiaInfoCallback(const smart_topic::Anesthesia::ConstPtr& msg)
   ROS_INFO("Subcribe Anesthesia Info: RATE:%d  DIAP:%d  SYSP:%d  SpO2:%d  BIS:%d",
            msg->RATE, msg->DIAP,
            msg->SYSP, msg->SpO2,
-           msg->BISr);
+           msg->BIS);
   smart_topic::Anesthesia* pmsg =new smart_topic::Anesthesia(*msg);
   int nleng = sizeof(smart_topic::Anesthesia);
   char* strData = new char[4 + nleng];
@@ -45,7 +45,7 @@ int main(int argc, char **argv)
   ros::NodeHandle n;
 
   // 创建一个Subscriber，订阅名为/anesthesia_info的topic，注册回调函数 anesthesiaInfoCallback
-  ros::Subscriber anesthesia_info_sub = n.subscribe("/anesthesia_publisher0", 10, anesthesiaInfoCallback);
+  ros::Subscriber anesthesia_info_sub = n.subscribe("/anesthesia_info0", 10, anesthesiaInfoCallback);
 
   g_thread.start();
   // 循环等待回调函数

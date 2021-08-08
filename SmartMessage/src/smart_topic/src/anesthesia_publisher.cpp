@@ -22,13 +22,13 @@ int GetRandomNumber(int number)
 int main(int argc, char **argv)
 {
   // ROS节点初始化
-  ros::init(argc, argv, "anesthesia_publisher");
+  ros::init(argc, argv, "anesthesia_publisher0");
 
   // 创建节点句柄
   ros::NodeHandle n;
 
   // 创建一个 Publisher，发布名为 /anesthesia_info的t opic，消息类型为 smart_topic::Anesthesia，队列长度10
-  ros::Publisher anesthesia_info_pub = n.advertise<smart_topic::Anesthesia>("/anesthesia_publisher0", 10);
+  ros::Publisher anesthesia_info_pub = n.advertise<smart_topic::Anesthesia>("/anesthesia_info0", 10);
 
   // 设置循环的频率
   ros::Rate loop_rate(1);
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
     sleep(1);
     anesthesia_msg.SpO2 = GetRandomNumber(100);
     sleep(1);
-    anesthesia_msg.BISr = GetRandomNumber(100);
+    anesthesia_msg.BIS = GetRandomNumber(100);
 
     // 发布消息
     anesthesia_info_pub.publish(anesthesia_msg);
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     ROS_INFO("Publish Anesthesia Info: RATE:%d  DIAP:%d  SYSP:%d  SpO2:%d  BIS:%d",
              anesthesia_msg.RATE, anesthesia_msg.DIAP,
              anesthesia_msg.SYSP, anesthesia_msg.SpO2,
-             anesthesia_msg.BISr);
+             anesthesia_msg.BIS);
 
     // 按照循环频率延时
     loop_rate.sleep();

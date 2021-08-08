@@ -21,31 +21,31 @@ struct Anesthesia_
         , DIAP(0) // 舒张压
         , SYSP(0) // 收缩压
         , SpO2(0) // 血氧
-        , BISr(0)  { // 脑电双频指数
+        , BIS(0)  { // 脑电双频指数
     }
     Anesthesia_(const ContainerAllocator& _alloc)
         : RATE(0)
         , DIAP(0)
         , SYSP(0)
         , SpO2(0)
-        , BISr(0)  {
+        , BIS(0)  {
         (void)_alloc;
     }
 
-    typedef uint16_t _RATE_type;
+    typedef int16_t _RATE_type;
     _RATE_type RATE;
 
-    typedef uint16_t _DIAP_type;
+    typedef int16_t _DIAP_type;
     _DIAP_type DIAP;
 
-    typedef uint16_t _SYSP_type;
+    typedef int16_t _SYSP_type;
     _SYSP_type SYSP;
 
-    typedef uint8_t _SpO2_type;
+    typedef int8_t _SpO2_type;
     _SpO2_type SpO2;
 
-    typedef uint8_t _BIS_type;
-    _BIS_type BISr;
+    typedef int8_t _BIS_type;
+    _BIS_type BIS;
 
 }; // struct Anesthesia_
 

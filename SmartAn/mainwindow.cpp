@@ -26,10 +26,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     setupRealtimeData(ui->widgetRATE, "心率", "血氧");
     setupRealtimeData(ui->widgetPressure, "舒张压", "收缩压");
-    setupRealtimeData(ui->widgetBIS, "BISr", "");
+    setupRealtimeData(ui->widgetBIS, "BIS", "");
 
     setupRealtimeData(ui->widgetHisPressure, "舒张压", "收缩压");
-    setupRealtimeData(ui->widgetHisBIS, "血氧", "BISr");
+    setupRealtimeData(ui->widgetHisBIS, "血氧", "BIS");
 
     ui->widgetPressure->replot();
     connect(this, SIGNAL(messageSignal(QVariant, QString)), this, SLOT(recvMsg(QVariant, QString)), Qt::QueuedConnection);
@@ -409,20 +409,20 @@ void MainWindow::recvMsg(QVariant DataVar, QString strcontent)
         QDateTime currentDateTime =QDateTime::currentDateTime();
 
 
-        QString strSql = "insert into patient_value (number, create_time, RATE, DIAP, SYSP, SpO2, BISr) values ('"
+        QString strSql = "insert into patient_value (number, create_time, RATE, DIAP, SYSP, SpO2, BIS) values ('"
                 + m_number + "', '"
                 + currentDateTime.toString("yyyy-MM-dd hh:mm:ss") + "', "
                 + QString::number(pmsg->RATE) + ", "
                 + QString::number(pmsg->DIAP) + ", "
                 + QString::number(pmsg->SYSP) + ", "
                 + QString::number(pmsg->SpO2) + ", "
-                + QString::number(pmsg->BISr)
+                + QString::number(pmsg->BIS)
                 + ")";
 
         insertSql(strSql);
 
         realtimeDataSlot(pmsg->RATE, pmsg->DIAP,
-                         pmsg->SYSP, pmsg->SpO2, pmsg->BISr);
+                         pmsg->SYSP, pmsg->SpO2, pmsg->BIS);
         delete pmsg;
     }
 }
