@@ -1,5 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+#include <QString>
 
 /**
  * mysql 全局配置默认属性

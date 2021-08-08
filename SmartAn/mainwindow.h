@@ -80,7 +80,7 @@ public slots:
 
     void dpichanged();
 private:
-    const int MESSAGE_INVALID = 65535; // 约定无效值
+    const int MESSAGE_INVALID = -1; // 约定无效值
 
     Ui::MainWindow *ui;
     QGraphicsScene *scene;
