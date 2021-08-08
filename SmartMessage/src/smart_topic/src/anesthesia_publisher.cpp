@@ -10,11 +10,11 @@ Copyright 2020 GuYueHome (www.guyuehome.com).
 #include <stdlib.h>
 #include "smart_topic/Anesthesia.h"
 
-int GetRandomNumber()
+int GetRandomNumber(int number)
 {
   int randomNumber;
   srand((unsigned)time(NULL));//time()用系统时间初始化种。为rand()生成不同的随机种子。
-  randomNumber = rand() % 100 + 1;//生成1~100随机数
+  randomNumber = rand() % number + 1;//生成1~100随机数
   return randomNumber;
 }
 
@@ -39,15 +39,23 @@ int main(int argc, char **argv)
     // 初始化learning_topic::Person类型的消息
     smart_topic::Anesthesia anesthesia_msg;
     sleep(1);
-    anesthesia_msg.RATE = GetRandomNumber();
+    if (count == 3)
+    {
+      count = 0;
+      anesthesia_msg.RATE = 266;
+    }
+    else
+    {
+      anesthesia_msg.RATE = GetRandomNumber(100);
+    }
     sleep(1);
-    anesthesia_msg.DIAP  = GetRandomNumber();
+    anesthesia_msg.DIAP = GetRandomNumber(100);
     sleep(1);
-    anesthesia_msg.SYSP = GetRandomNumber();
+    anesthesia_msg.SYSP = GetRandomNumber(100);
     sleep(1);
-    anesthesia_msg.SpO2 = GetRandomNumber();
+    anesthesia_msg.SpO2 = GetRandomNumber(100);
     sleep(1);
-    anesthesia_msg.BISr = GetRandomNumber();
+    anesthesia_msg.BISr = GetRandomNumber(100);
 
     // 发布消息
     anesthesia_info_pub.publish(anesthesia_msg);
@@ -59,6 +67,7 @@ int main(int argc, char **argv)
 
     // 按照循环频率延时
     loop_rate.sleep();
+    count++;
   }
 
   return 0;

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.9.2, 2021-07-23T00:22:45. -->
+<!-- Written by QtCreator 4.9.2, 2021-08-07T18:14:36. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -102,21 +102,21 @@
     <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">2</value>
     <value type="bool" key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment">false</value>
     <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges">
-     <value type="QString">CMAKE_PREFIX_PATH=/home/lengjie/Code/SmartMessage/devel:/home/lengjie/Code/anesthesia-catkin-workspace-main/devel:/opt/ros/melodic</value>
-     <value type="QString">LD_LIBRARY_PATH=/home/lengjie/Code/SmartMessage/devel/lib:/home/lengjie/Code/anesthesia-catkin-workspace-main/devel/lib:/opt/ros/melodic/lib</value>
+     <value type="QString">CMAKE_PREFIX_PATH=/home/lengjie/Project/Qt-interface/SmartMessage/devel:/home/lengjie/Code/anesthesia-catkin-workspace-main/devel:/opt/ros/melodic</value>
+     <value type="QString">LD_LIBRARY_PATH=/home/lengjie/Project/Qt-interface/SmartMessage/devel/lib:/home/lengjie/Code/anesthesia-catkin-workspace-main/devel/lib:/opt/ros/melodic/lib</value>
      <value type="QString">PATH=/opt/ros/melodic/bin:/home/lengjie/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin</value>
-     <value type="QString">PKG_CONFIG_PATH=/home/lengjie/Code/SmartMessage/devel/lib/pkgconfig:/home/lengjie/Code/anesthesia-catkin-workspace-main/devel/lib/pkgconfig:/opt/ros/melodic/lib/pkgconfig</value>
-     <value type="QString">PWD=/home/lengjie/Code/SmartMessage</value>
-     <value type="QString">PYTHONPATH=/home/lengjie/Code/SmartMessage/devel/lib/python2.7/dist-packages:/home/lengjie/Code/anesthesia-catkin-workspace-main/devel/lib/python2.7/dist-packages:/opt/ros/melodic/lib/python2.7/dist-packages</value>
-     <value type="QString">ROSLISP_PACKAGE_DIRECTORIES=/home/lengjie/Code/SmartMessage/devel/share/common-lisp:/home/lengjie/Code/anesthesia-catkin-workspace-main/devel/share/common-lisp</value>
+     <value type="QString">PKG_CONFIG_PATH=/home/lengjie/Project/Qt-interface/SmartMessage/devel/lib/pkgconfig:/home/lengjie/Code/anesthesia-catkin-workspace-main/devel/lib/pkgconfig:/opt/ros/melodic/lib/pkgconfig</value>
+     <value type="QString">PWD=/home/lengjie/Project/Qt-interface/SmartMessage</value>
+     <value type="QString">PYTHONPATH=/home/lengjie/Project/Qt-interface/SmartMessage/devel/lib/python2.7/dist-packages:/home/lengjie/Code/anesthesia-catkin-workspace-main/devel/lib/python2.7/dist-packages:/opt/ros/melodic/lib/python2.7/dist-packages</value>
+     <value type="QString">ROSLISP_PACKAGE_DIRECTORIES=/home/lengjie/Project/Qt-interface/SmartMessage/devel/share/common-lisp:/home/lengjie/Code/anesthesia-catkin-workspace-main/devel/share/common-lisp</value>
      <value type="QString">ROS_DISTRO=melodic</value>
      <value type="QString">ROS_ETC_DIR=/opt/ros/melodic/etc/ros</value>
      <value type="QString">ROS_MASTER_URI=http://localhost:11311</value>
-     <value type="QString">ROS_PACKAGE_PATH=/home/lengjie/Code/SmartMessage/src:/home/lengjie/Code/anesthesia-catkin-workspace-main/src:/opt/ros/melodic/share</value>
+     <value type="QString">ROS_PACKAGE_PATH=/home/lengjie/Project/Qt-interface/SmartMessage/src:/home/lengjie/Code/anesthesia-catkin-workspace-main/src:/opt/ros/melodic/share</value>
      <value type="QString">ROS_PYTHON_VERSION=2</value>
      <value type="QString">ROS_ROOT=/opt/ros/melodic/share/ros</value>
      <value type="QString">ROS_VERSION=1</value>
-     <value type="QString">SHLVL=29</value>
+     <value type="QString">SHLVL=39</value>
      <value type="QString">TERM=xterm</value>
      <value type="QString">_=/usr/bin/env</value>
     </valuelist>

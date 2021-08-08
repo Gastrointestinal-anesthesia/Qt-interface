@@ -35,6 +35,7 @@ SOURCES += \
 HEADERS += \
         anesthesia.h \
         auto_resize.h \
+        config.h \
         connection.h \
         entity.h \
         mainwindow.h \

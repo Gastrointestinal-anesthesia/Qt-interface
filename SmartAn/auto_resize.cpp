@@ -25,7 +25,7 @@ AutoResize::~AutoResize(void)
 {
 }
 
-//添加所有需要缩放的控件，获得要缩放控件的位置和宽高（自定义控件缩放）
+// 添加所有需要缩放的控件，获得要缩放控件的位置和宽高（自定义控件缩放）
 void AutoResize::pushAllResizeItem()
 {
     qDebug()<<"get item start";
@@ -46,7 +46,7 @@ void AutoResize::pushAllResizeItem()
         resizeData.data_font = item->font();
         m_resizeMap[item] = resizeData;
     }
-        //再与需要自适应的枚举量控件进行与操作来判断是否需要自适应
+    //再与需要自适应的枚举量控件进行与操作来判断是否需要自适应
     if(m_autoResizeFlag&INCLUDE_LABEL)
     {
         QList<QLabel*> _labelList=m_autoResizeObj->findChildren<QLabel *>();
@@ -63,83 +63,85 @@ void AutoResize::pushAllResizeItem()
             m_resizeMap[item]=resizeData;
         }
     }
-    if(m_autoResizeFlag&INCLUDE_COMBOBOX)
+    if(m_autoResizeFlag & INCLUDE_COMBOBOX)
     {
         QList<QComboBox*> _comboxList=m_autoResizeObj->findChildren<QComboBox *>();
         for(auto it=_comboxList.begin();it!=_comboxList.end();it++)
         {
             item = *it;
             tmp = item->geometry();
-                       tmp.setX(item->x());
-                       tmp.setY(item->y());
-                       tmp.setWidth(abs(tmp.width()));
-                       tmp.setHeight(abs(tmp.height()));
-                       resizeData.data_rect = tmp;
-                       resizeData.data_font = item->font();
-                       m_resizeMap[item] = resizeData;
-                   }
-               }
-               if(m_autoResizeFlag&INCLUDE_BUTTON)
-               {
-                   QList<QAbstractButton*> _buttonList=m_autoResizeObj->findChildren<QAbstractButton*>();
-                   for(auto it=_buttonList.begin();it!=_buttonList.end();it++)
-                   {
-                       //qDebug()<<*it;
-                       item=*it;
-                       tmp=item->geometry();
-                       tmp.setX(item->x());
-                       tmp.setY(item->y());
-                       tmp.setWidth(abs(tmp.width()));
-                       tmp.setHeight(abs(tmp.height()));
-                       resizeData.data_rect=tmp;
-                       resizeData.data_font=item->font();
-                       m_resizeMap[item]=resizeData;
-                   }
-               }
-               if(m_autoResizeFlag&INCLUDE_EDITOR)
-               {
-                   QList<QLineEdit*> _editorList=m_autoResizeObj->findChildren<QLineEdit*>();
-                   for(auto it=_editorList.begin();it!=_editorList.end();it++)
-                   {
-                               item=*it;
-                               tmp=item->geometry();
-                               tmp.setX(item->x());
-                               tmp.setY(item->y());
-                               tmp.setWidth(abs(tmp.width()));
-                               tmp.setHeight(abs(tmp.height()));
-                               resizeData.data_rect=tmp;
-                               resizeData.data_font=item->font();
-                               m_resizeMap[item]=resizeData;
-                           }
-                       }
-                       for(auto it=m_ignoreItem.begin();it!=m_ignoreItem.end();it++)
-                       {
-                           if(m_resizeMap.contains(*it))
-                               m_resizeMap.remove(*it);
-                       }
-                       m_autoResize=true;
-                   }
+            tmp.setX(item->x());
+            tmp.setY(item->y());
+            tmp.setWidth(abs(tmp.width()));
+            tmp.setHeight(abs(tmp.height()));
+            resizeData.data_rect = tmp;
+            resizeData.data_font = item->font();
+            m_resizeMap[item] = resizeData;
+        }
+    }
+    if(m_autoResizeFlag&INCLUDE_BUTTON)
+    {
+        QList<QAbstractButton*> _buttonList=m_autoResizeObj->findChildren<QAbstractButton*>();
+        for(auto it=_buttonList.begin();it!=_buttonList.end();it++)
+        {
+            //qDebug()<<*it;
+            item=*it;
+            tmp=item->geometry();
+            tmp.setX(item->x());
+            tmp.setY(item->y());
+            tmp.setWidth(abs(tmp.width()));
+            tmp.setHeight(abs(tmp.height()));
+            resizeData.data_rect=tmp;
+            resizeData.data_font=item->font();
+            m_resizeMap[item]=resizeData;
+        }
+    }
+    if(m_autoResizeFlag&INCLUDE_EDITOR)
+    {
+        QList<QLineEdit*> _editorList=m_autoResizeObj->findChildren<QLineEdit*>();
+        for(auto it=_editorList.begin();it!=_editorList.end();it++)
+        {
+            item=*it;
+            tmp=item->geometry();
+            tmp.setX(item->x());
+            tmp.setY(item->y());
+            tmp.setWidth(abs(tmp.width()));
+            tmp.setHeight(abs(tmp.height()));
+            resizeData.data_rect=tmp;
+            resizeData.data_font=item->font();
+            m_resizeMap[item]=resizeData;
+        }
+    }
+    for(auto it=m_ignoreItem.begin();it!=m_ignoreItem.end();it++)
+    {
+        if(m_resizeMap.contains(*it))
+            m_resizeMap.remove(*it);
+    }
+    m_autoResize=true;
+}
 
- float AutoResize::getHorResizeRatio()
- {
-     return m_horRatio;
+float AutoResize::getHorResizeRatio()
+{
+    return m_horRatio;
 }
 
 float AutoResize::getVerResizeRatio()
- {
+{
     return m_verRatio;
- }
+}
 
 float AutoResize::getFontResizeRatio()
 {
     return m_fontRatio;
 }
- void AutoResize::resetBaseWidth2BaseHeight(float base_width,float base_height)
- {
-     m_baseWidth = base_width ;
-     m_baseHeight = base_height;
- }
-//计算缩放的比例
+
+void AutoResize::resetBaseWidth2BaseHeight(float base_width,float base_height)
+{
+    m_baseWidth = base_width ;
+    m_baseHeight = base_height;
+}
+
+// 计算缩放的比例
 void AutoResize::calculateResizeRatio()
 {
     //宽的比例（水平）
@@ -161,7 +163,6 @@ void AutoResize::calculateResizeRatio()
 
  处理：对于已经采用PixelSize的字体来说，就要对其进行控制缩放
  */
-
 void AutoResize::fontAutoResize(QWidget *obj,int fontSize)
 {
     qDebug()<<"set"<<obj<<fontSize;
@@ -201,10 +202,9 @@ void AutoResize::fontAutoResize(QWidget *obj,int fontSize)
         changedFont.setPointSize(fontSize);
         obj->setFont(changedFont);
     }
- }
+}
 
-
-//获得layout(栅格化)布局
+// 获得layout(栅格化)布局
 void AutoResize::dealLayoutItems()
 {
     QString desName = "layoutWidget";
@@ -289,8 +289,8 @@ void AutoResize::doAutoResize()
         {
             _fontIt.next();
             QWidget* _item = _fontIt.key();
-              changedFont = _fontIt.value().data_font;
-              fontAutoResize(_item,changedFont.pointSize());
+            changedFont = _fontIt.value().data_font;
+            fontAutoResize(_item,changedFont.pointSize());
         }
     }
 }

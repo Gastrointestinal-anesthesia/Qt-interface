@@ -10,6 +10,7 @@
 #include <QSqlError>
 #include <QGraphicsScene>
 #include "entity.h"
+#include "config.h"
 #include "connection.h"
 #include "patient_sql.h"
 #include "patient_value_sql.h"
@@ -34,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(messageSignal(QVariant, QString)), this, SLOT(recvMsg(QVariant, QString)), Qt::QueuedConnection);
     m_thread.setObjectName("recvMsg");
     m_thread.setParent(this);
-    //m_thread.start();
+    m_thread.start();
     QDateTime currentDateTime = QDateTime::currentDateTime();
     ui->dateHisStartTime->setDateTime(currentDateTime);
     ui->dateHisStopTime->setDateTime(currentDateTime);
@@ -60,12 +61,12 @@ MainWindow::MainWindow(QWidget *parent) :
 void MainWindow::setupRealtimeData(QCustomPlot *customPlot, const QString& first, const QString& second)
 {
     customPlot->addGraph(); // blue line
-    customPlot->graph(0)->setPen(QPen(QColor(200, 0, 0)));
+    customPlot->graph(0)->setPen(QPen(QColor(100,149,237)));
     customPlot->graph(0)->setName(first);
     //customPlot->graph(0)->setBrush(QBrush(QColor(240, 255, 200)));
     //customPlot->graph(0)->setAntialiasedFill(false);
     customPlot->addGraph(); // red line
-    customPlot->graph(1)->setPen(QPen(Qt::red));
+    customPlot->graph(1)->setPen(QPen(QColor(46,139,87)));
     customPlot->graph(1)->setName(second);
     //customPlot->graph(0)->setChannelFillGraph(customPlot->graph(1));
 
@@ -95,29 +96,50 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
     qsrand(QTime::currentTime().msec() + QTime::currentTime().second() * 10000);
 
+    /*******************************************************/
+    if (RATE != MESSAGE_INVALID)
+    {
+        if (RATE >= g_message_RATE)
+        {
 
-    ui->widgetRATE->graph(0)->addData(key, RATE);//添加数据1到曲线1
+        }
+        else
+        {
+            ui->widgetRATE->graph(0)->addData(key, RATE); // 添加数据1到曲线1
+        }
+    }
+    if (SpO2 != MESSAGE_INVALID)
+    {
+        ui->widgetRATE->graph(1)->addData(key, SpO2); // 添加数据2到曲线2
+    }
 
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
-    ui->widgetPressure->graph(0)->removeDataBefore(key-60);
+    ui->widgetRATE->graph(0)->removeDataBefore(key-60);
+    ui->widgetRATE->graph(1)->removeDataBefore(key-60);
 
     //自动设定graph(1)曲线y轴的范围，如果不设定，有可能看不到图像
     //也可以用ui->widgetPressure->yAxis->setRange(up,low)手动设定y轴范围
-    ui->widgetPressure->graph(0)->rescaleValueAxis();
+    ui->widgetRATE->graph(0)->rescaleValueAxis();
+    ui->widgetRATE->graph(1)->rescaleValueAxis(true);
 
     //这里的8，是指横坐标时间宽度为8秒，如果想要横坐标显示更多的时间
     //就把8调整为比较大到值，比如要显示60秒，那就改成60。
     //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
-    ui->widgetPressure->yAxis->setRange(0, 100);
-    ui->widgetPressure->xAxis->setRange(key+0.25, 60, Qt::AlignRight);//设定x轴的范围
-    ui->widgetPressure->replot();
+    ui->widgetRATE->yAxis->setRange(0, 100);
+    ui->widgetRATE->xAxis->setRange(key+0.25, 60, Qt::AlignRight);//设定x轴的范围
+    ui->widgetRATE->replot();
 
 
     /*******************************************************/
-
-    ui->widgetPressure->graph(0)->addData(key, DIAP);//添加数据1到曲线1
-    ui->widgetPressure->graph(1)->addData(key, SYSP);//添加数据2到曲线2
+    if (DIAP != MESSAGE_INVALID)
+    {
+        ui->widgetPressure->graph(0)->addData(key, DIAP);//添加数据1到曲线1
+    }
+    if (SYSP != MESSAGE_INVALID)
+    {
+        ui->widgetPressure->graph(1)->addData(key, SYSP);//添加数据2到曲线2
+    }
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
     ui->widgetPressure->graph(0)->removeDataBefore(key-60);
@@ -137,29 +159,57 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
 
 
     /*******************************************************/
-    ui->widgetBIS->graph(0)->addData(key, SpO2);//添加数据1到曲线1
-    ui->widgetBIS->graph(1)->addData(key, BISr);//添加数据2到曲线2
+    if (SpO2 != MESSAGE_INVALID)
+    {
+        ui->widgetBIS->graph(0)->addData(key, SpO2); // 添加数据1到曲线1
+    }
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
     ui->widgetBIS->graph(0)->removeDataBefore(key-60);
-    ui->widgetBIS->graph(1)->removeDataBefore(key-60);
 
     //自动设定graph(1)曲线y轴的范围，如果不设定，有可能看不到图像
     //也可以用ui->widgetPressure->yAxis->setRange(up,low)手动设定y轴范围
     ui->widgetBIS->graph(0)->rescaleValueAxis();
-    ui->widgetBIS->graph(1)->rescaleValueAxis(true);
 
     //这里的8，是指横坐标时间宽度为8秒，如果想要横坐标显示更多的时间
     //就把8调整为比较大到值，比如要显示60秒，那就改成60。
     //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
     ui->widgetBIS->yAxis->setRange(0, 100);
-    ui->widgetBIS->xAxis->setRange(key+0.25, 60, Qt::AlignRight);//设定x轴的范围
+    ui->widgetBIS->xAxis->setRange(key+0.25, 60, Qt::AlignRight); // 设定x轴的范围
     ui->widgetBIS->replot();
 
-    ui->lblDIAPCurrentVal->setText(QString::number(DIAP));
-    ui->lblSYSPCurrentVal->setText(QString::number(SYSP));
-    ui->lblSpO2CurrentVal->setText(QString::number(SpO2));
-    ui->lblBISCurrentVal->setText(QString::number(BISr));
+    /*******************************************************/
+    if (RATE != MESSAGE_INVALID)
+    {
+        if (RATE >= g_message_RATE)
+        {
+            ui->lblRATECurrentVal->setStyleSheet("color: red;");
+            ui->lblRATECurrentVal->setText(QString::number(RATE));
+        }
+        else
+        {
+            ui->lblRATECurrentVal->setStyleSheet("color: rgb(100,149,237);");
+            ui->lblRATECurrentVal->setText(QString::number(RATE));
+        }
+    }
+    if (SpO2 != MESSAGE_INVALID)
+    {
+        ui->lblSpO2CurrentVal->setText(QString::number(SpO2));
+    }
+
+    if (DIAP != MESSAGE_INVALID)
+    {
+        ui->lblDIAPCurrentVal->setText(QString::number(DIAP));
+    }
+    if (SYSP != MESSAGE_INVALID)
+    {
+        ui->lblSYSPCurrentVal->setText(QString::number(SYSP));
+    }
+
+    if (BISr != MESSAGE_INVALID)
+    {
+        ui->lblBISCurrentVal->setText(QString::number(BISr));
+    }
 }
 
 /**
@@ -336,8 +386,9 @@ void  MainWindow::resizeEvent(QResizeEvent *event)
             (*it)->setGeometry(QRect(pos_x_new, pos_y_new, size_x_new, size_y_new));
         }
     }
-
+    caluteDpi();
 }
+
 void MainWindow::sendData( smart_topic::Anesthesia* pData)
 {
     void* naddress = pData;
@@ -348,6 +399,7 @@ void MainWindow::sendData( smart_topic::Anesthesia* pData)
 
 void MainWindow::recvMsg(QVariant DataVar, QString strcontent)
 {
+    int i = 10;
     if (m_isStart)
     {
         void* nmsg = DataVar.value<void*>();

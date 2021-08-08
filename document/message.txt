@@ -1,0 +1,7 @@
+source devel/setup.bash
+rosrun smart_topic anesthesia_publisher
+
+source devel/setup.bash
+rosrun smart_topic anesthesia_subscriber
+
+

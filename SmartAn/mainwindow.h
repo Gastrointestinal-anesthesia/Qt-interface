@@ -80,7 +80,7 @@ public slots:
 
     void dpichanged();
 private:
-    const int invalid = -1; // 约定无效值
+    const int MESSAGE_INVALID = 65535; // 约定无效值
 
     Ui::MainWindow *ui;
     QGraphicsScene *scene;
@@ -95,7 +95,7 @@ private:
     float m_fWidthScale;
     float m_fHeightScale;
     std::map<QWidget*,childpos> m_mapChildScale;
-     std::map<QWidget*,childpos> m_mapChildScale_his;
+    std::map<QWidget*,childpos> m_mapChildScale_his;
 
 };
 

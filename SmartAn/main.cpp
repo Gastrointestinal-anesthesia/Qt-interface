@@ -6,7 +6,7 @@
 #include <QDebug>
 #include <QElapsedTimer>
 #include <QDateTime>
-#include "connection.h"
+#include "config.h"
 
 QSettings *g_psetting = nullptr;
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 #if (QT_VERSION >= QT_VERSION_CHECK(5,9,0))
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
-     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+
     QApplication a(argc, argv);
 
     QString filePath = QCoreApplication::applicationDirPath();
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     QPixmap pixmap(filePath + "/screen.jpg");
     QSplashScreen screen(pixmap);
     screen.show();
-    screen.setFont(QFont("宋体",30, QFont::Bold));
+    screen.setFont(QFont("宋体", 30, QFont::Bold));
     QColor color;
 
     color.setRgb(0,100,149,237);
@@ -64,7 +64,6 @@ int main(int argc, char *argv[])
     {
         a.processEvents();
     }
-
 
     QString configFileName = filePath + "/config.ini";
     g_psetting = new QSettings(configFileName, QSettings::IniFormat);
@@ -85,6 +84,12 @@ int main(int argc, char *argv[])
         g_mysql_user = GetConfigData("mysql", "user").toString();
         g_mysql_password = GetConfigData("mysql", "password").toString();
         g_mysql_databaseName = GetConfigData("mysql", "databaseName").toString();
+
+        g_message_RATE = GetConfigData("message", "RATE").toInt();
+        g_message_DIAP = GetConfigData("message", "DIAP").toInt();
+        g_message_SYSP = GetConfigData("message", "SYSP").toInt();
+        g_message_SpO2 = GetConfigData("message", "SpO2").toInt();
+        g_message_BISr = GetConfigData("message", "BISr").toInt();
     }
 
 

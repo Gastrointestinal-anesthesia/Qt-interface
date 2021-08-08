@@ -13,7 +13,7 @@ public:
 public:
   
   void start();
-  void run() ;
+  virtual void run() ;
 };
 
 #endif // MYTHREAD_H

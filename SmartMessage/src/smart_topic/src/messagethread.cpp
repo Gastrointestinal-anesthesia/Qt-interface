@@ -36,6 +36,7 @@ void MessageThread::start()
   int rc1=0;
   rc1 = pthread_create(&tid1, NULL, thread1, this);
 }
+
 void MessageThread::run()
 {
   int ss = socket(AF_INET, SOCK_STREAM, 0);//若成功则返回一个sockfd（套接字描述符）
@@ -76,6 +77,7 @@ void MessageThread::run()
     pthread_mutex_unlock(&g_mutex);
   }
 }
+
 void* thread1(void* pthis)
 {
   MessageThread* pthat = (MessageThread* )pthis;

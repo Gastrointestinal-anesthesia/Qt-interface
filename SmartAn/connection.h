@@ -6,14 +6,7 @@
 #include <QSqlQuery>
 #include <QString>
 
-/**
- * mysql 全局配置默认属性
- */
-inline QString g_mysql_hostName = "hostname";
-inline int g_mysql_port = 3306;
-inline QString g_mysql_user = "root";
-inline QString g_mysql_password = "888888";
-inline QString g_mysql_databaseName = "SmartAn";
+
 
 /**
  * @brief 创建连接
