@@ -72,6 +72,16 @@ private slots:
 
     void on_btnInfoStop_clicked();
 
+    void on_btnMonitorPOK_clicked();
+
+    void on_btnMonitorSOK_clicked();
+
+    void on_btnMonitorPCancel_clicked();
+
+    void on_btnMonitorSCancel_clicked();
+
+    void on_btnMonitorCancel_clicked();
+
 signals:
     void messageSignal(QVariant, QString);     // 信号只能声明不能定义
 public slots:

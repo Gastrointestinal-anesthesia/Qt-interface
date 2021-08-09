@@ -51,5 +51,37 @@ static bool insertSql(QString strSql)
     return result;
 }
 
+/**
+ * @brief 通用的 sql 更新
+ * @param strSql
+ * @return
+ */
+static bool updateSql(QString strSql)
+{
+    QSqlDatabase db;
+    createConnection(db);
+
+    QSqlQuery query(db);
+    bool result = query.exec(strSql);
+    QSqlDatabase::removeDatabase("QMYSQL");
+    return result;
+}
+
+/**
+ * @brief 通用的 sql 删除
+ * @param strSql
+ * @return
+ */
+static bool deleteSql(QString strSql)
+{
+    QSqlDatabase db;
+    createConnection(db);
+
+    QSqlQuery query(db);
+    bool result = query.exec(strSql);
+    QSqlDatabase::removeDatabase("QMYSQL");
+    return result;
+}
+
 
 #endif // CONNECTION_H

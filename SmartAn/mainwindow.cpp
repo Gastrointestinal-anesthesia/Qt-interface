@@ -14,6 +14,7 @@
 #include "connection.h"
 #include "patient_sql.h"
 #include "patient_value_sql.h"
+#include "patient_medicine_sql.h"
 
 using namespace std;
 using namespace QtCharts;
@@ -183,32 +184,32 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
     {
         if (RATE >= g_message_RATE)
         {
-            ui->lblRATECurrentVal->setStyleSheet("color: red;");
-            ui->lblRATECurrentVal->setText(QString::number(RATE));
+            ui->lblMonitorRATECurrentVal->setStyleSheet("color: red;");
+            ui->lblMonitorRATECurrentVal->setText(QString::number(RATE));
         }
         else
         {
-            ui->lblRATECurrentVal->setStyleSheet("color: rgb(100,149,237);");
-            ui->lblRATECurrentVal->setText(QString::number(RATE));
+            ui->lblMonitorRATECurrentVal->setStyleSheet("color: rgb(100,149,237);");
+            ui->lblMonitorRATECurrentVal->setText(QString::number(RATE));
         }
     }
     if (SpO2 != MESSAGE_INVALID)
     {
-        ui->lblSpO2CurrentVal->setText(QString::number(SpO2));
+        ui->lblMonitorSpO2CurrentVal->setText(QString::number(SpO2));
     }
 
     if (DIAP != MESSAGE_INVALID)
     {
-        ui->lblDIAPCurrentVal->setText(QString::number(DIAP));
+        ui->lblMonitorDIAPCurrentVal->setText(QString::number(DIAP));
     }
     if (SYSP != MESSAGE_INVALID)
     {
-        ui->lblSYSPCurrentVal->setText(QString::number(SYSP));
+        ui->lblMonitorSYSPCurrentVal->setText(QString::number(SYSP));
     }
 
     if (BISr != MESSAGE_INVALID)
     {
-        ui->lblBISCurrentVal->setText(QString::number(BISr));
+        ui->lblMonitorBISCurrentVal->setText(QString::number(BISr));
     }
 }
 
@@ -598,16 +599,18 @@ void MainWindow::on_btnInfoStart_clicked()
         }
 
 
-
-        QString strSql = "INSERT INTO patient (number, sex, height, weight, age, recordDate, recordTime) VALUES('"
+        QString strSql = "INSERT INTO patient (number, sex, height, weight, age, create_date, create_time, update_time) VALUES('"
                 + m_number + "',"
                 + sex + ","
                 + height + ","
                 + weight + ","
                 + age + ", '"
                 + datetime->toString("yyyy-MM-dd") + "', '"
+                + datetime->toString("yyyy-MM-dd hh:mm:ss") + "', '"
                 + datetime->toString("yyyy-MM-dd hh:mm:ss")
                 + "')";
+
+        qDebug() << strSql << endl;
 
         bool result = insertSql(strSql);
 
@@ -693,37 +696,166 @@ void MainWindow::on_btnInfoStop_clicked()
 void MainWindow::on_btnInfoOK_clicked()
 {
     QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定保存吗？",QMessageBox::Yes|QMessageBox::No);
+    QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
     switch (result)
     {
     case QMessageBox::Yes:
     {
-        QString number = ui->txtInfoNumber->text();
         QString sex = QString::number(ui->cmbInfoSex->currentIndex());
-
         QString height = ui->txtInfoHeight->text();
         QString weight = ui->txtInfoWeight->text();
         QString age = ui->txtInfoAge->text();
-        QString strSql = "insert into patient (number, sex, height, weight, age) values('"
-                + number + "',"
-                + sex + ","
-                + height + ","
-                + weight + ","
-                + age
-                + ")";
 
-        bool result = insertSql(strSql);
-        if (result)
+        if (m_number == "")
         {
-            m_number = number;
-            QMessageBox::information(NULL, "提示", "插入成功！");
+            int number = getMaxPatientNumber();
+            number += 1;; // 设置显示格式
+
+            m_number = QString::number(number);
+
+            ui->txtInfoNumber->setText(m_number);
+
+            QString strSql = "INSERT INTO patient (number, sex, height, weight, age, create_date, create_time, update_time) VALUES('"
+                    + m_number + "',"
+                    + sex + ","
+                    + height + ","
+                    + weight + ","
+                    + age + ", '"
+                    + datetime->toString("yyyy-MM-dd") + "', '"
+                    + datetime->toString("yyyy-MM-dd hh:mm:ss") + "', '"
+                    + datetime->toString("yyyy-MM-dd hh:mm:ss") + "'"
+                    + ")";
+
+            bool result = insertSql(strSql);
+            if (result)
+            {
+                QMessageBox::information(NULL, "提示", "保存成功！");
+            }
+            else
+            {
+                QMessageBox::information(NULL, "提示", "保存失败！");
+            }
         }
         else
         {
-            QMessageBox::information(NULL, "提示", "插入失败！");
+            QString strSql = "UPDATE patient SET "
+                    + QString(" sex = ") + sex + ", "
+                    + QString(" height = ") + height + ","
+                    + QString(" weight = ") + weight + ","
+                    + QString(" age = ") + age + ", "
+                    + QString(" update_time = '") + datetime->toString("yyyy-MM-dd hh:mm:ss") + "'"
+                    + QString(" WHERE number = '") + m_number + "'";
+
+            bool result = updateSql(strSql);
+
+            if (result)
+            {
+                QMessageBox::information(NULL, "提示", "修改成功！");
+            }
+            else
+            {
+                QMessageBox::information(NULL, "提示", "修改失败！");
+            }
         }
     }
         break;
     default:
         break;
+    }
+}
+
+void MainWindow::on_btnMonitorPOK_clicked()
+{
+    if (m_number == "")
+    {
+        QMessageBox::information(NULL, "提示", "请先保存病人信息！");
+        return;
+    }
+
+    QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
+
+    QString strPropofol = ui->txtMonitorPropofol->text();
+
+    QString strSql = "INSERT INTO patient_medicine (number, type, value, create_time) VALUES('"
+            + m_number + "', 0, '"
+            + strPropofol + "', '"
+            + datetime->toString("yyyy-MM-dd hh:mm:ss") + "'"
+            + ")";
+
+    bool result = insertSql(strSql);
+    if (result)
+    {
+        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 丙泊酚 " + ui->txtMonitorPropofol->text() + " ml 成功！");
+        QMessageBox::information(NULL, "提示", "保存成功！");
+    }
+    else
+    {
+        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 丙泊酚 " + ui->txtMonitorPropofol->text() + " ml 失败！");
+        QMessageBox::information(NULL, "提示", "保存失败！");
+    }
+
+}
+
+void MainWindow::on_btnMonitorSOK_clicked()
+{
+    if (m_number == "")
+    {
+        QMessageBox::information(NULL, "提示", "请先保存病人信息！");
+        return;
+    }
+
+    QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
+
+    QString strSufentanil = ui->txtMonitorSufentanil->text();
+
+    QString strSql = "INSERT INTO patient_medicine (number, type, value, create_time) VALUES('"
+            + m_number + "', 1, '"
+            + strSufentanil + "', '"
+            + datetime->toString("yyyy-MM-dd hh:mm:ss") + "'"
+            + ")";
+    bool result = insertSql(strSql);
+    if (result)
+    {
+        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 舒芬太尼 " + ui->txtMonitorPropofol->text() + " ml 成功！");
+        QMessageBox::information(NULL, "提示", "保存成功！");
+    }
+    else
+    {
+        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 舒芬太尼 " + ui->txtMonitorPropofol->text() + " ml 失败！");
+        QMessageBox::information(NULL, "提示", "保存失败！");
+
+    }
+}
+
+
+void MainWindow::on_btnMonitorCancel_clicked()
+{
+    QString strSql = "SELECT COUNT(*) AS count FROM patient_medicine WHERE number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
+    bool result = judgePatientMedicine(strSql);
+    if (!result)
+    {
+        QMessageBox::information(NULL, "提示", "暂无数据可撤销！");
+        return;
+    }
+
+    vector<PatientMedicine> vecPatientMedicine;
+
+    strSql = "SELECT t.name, p.value, p.create_time FROM patient_medicine AS p LEFT JOIN medicine_type AS t ON p.type = t.type"
+            + QString(" WHERE p.number = ") + m_number + " ORDER BY p.create_time DESC LIMIT 1 ";
+    selectMedicineInfo(strSql, vecPatientMedicine);
+
+    strSql = "DELETE FROM patient_medicine WHERE number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
+    result = deleteSql(strSql);
+    if (result)
+    {
+        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
+                + " "  + vecPatientMedicine[0].value +  " ml 成功！");
+        QMessageBox::information(NULL, "提示", "撤销成功！");
+    }
+    else
+    {
+        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
+                + " "  + vecPatientMedicine[0].value +  " ml 失败！");
+        QMessageBox::information(NULL, "提示", "撤销失败！");
     }
 }

@@ -21,4 +21,12 @@ typedef struct patient_value
 
 }PatientValue;
 
+typedef struct patient_medicine
+{
+    QString strNumber;
+    QString value;
+    QString name;
+    QString strCreateTime;
+}PatientMedicine;
+
 #endif // ENTITY_H

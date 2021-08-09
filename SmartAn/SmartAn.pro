@@ -4,6 +4,7 @@
 #
 #-------------------------------------------------
 
+CONFIG += C++11
 QT       += core gui charts sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
@@ -40,6 +41,7 @@ HEADERS += \
         entity.h \
         mainwindow.h \
         message_thread.hpp \
+        patient_medicine_sql.h \
         patient_sql.h \
         patient_value_sql.h \
         qcustomplot.h
