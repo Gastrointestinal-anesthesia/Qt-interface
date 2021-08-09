@@ -98,5 +98,6 @@ int main(int argc, char *argv[])
     w.show();
     w.initchildposscale();
     w.caluteDpi();
+    w.setWindowIcon(QIcon("logo.ico"));
     return a.exec();
 }

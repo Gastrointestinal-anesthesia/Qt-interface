@@ -567,6 +567,7 @@ void MainWindow::on_btnInfoStart_clicked()
     {
         QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
         int number = getMaxPatientNumber();
+
         number += 1;; // 设置显示格式
 
         m_number = QString::number(number);
@@ -693,9 +694,9 @@ void MainWindow::on_btnInfoStop_clicked()
     }
 }
 
-void MainWindow::on_btnInfoOK_clicked()
+void MainWindow::on_btnInfoModify_clicked()
 {
-    QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定保存吗？",QMessageBox::Yes|QMessageBox::No);
+    QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定修改吗？",QMessageBox::Yes|QMessageBox::No);
     QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
     switch (result)
     {
@@ -705,38 +706,23 @@ void MainWindow::on_btnInfoOK_clicked()
         QString height = ui->txtInfoHeight->text();
         QString weight = ui->txtInfoWeight->text();
         QString age = ui->txtInfoAge->text();
-
-        if (m_number == "")
+        if (height == "")
         {
-            int number = getMaxPatientNumber();
-            number += 1;; // 设置显示格式
-
-            m_number = QString::number(number);
-
-            ui->txtInfoNumber->setText(m_number);
-
-            QString strSql = "INSERT INTO patient (number, sex, height, weight, age, create_date, create_time, update_time) VALUES('"
-                    + m_number + "',"
-                    + sex + ","
-                    + height + ","
-                    + weight + ","
-                    + age + ", '"
-                    + datetime->toString("yyyy-MM-dd") + "', '"
-                    + datetime->toString("yyyy-MM-dd hh:mm:ss") + "', '"
-                    + datetime->toString("yyyy-MM-dd hh:mm:ss") + "'"
-                    + ")";
-
-            bool result = insertSql(strSql);
-            if (result)
-            {
-                QMessageBox::information(NULL, "提示", "保存成功！");
-            }
-            else
-            {
-                QMessageBox::information(NULL, "提示", "保存失败！");
-            }
+            height = "null";
         }
-        else
+
+        if (weight == "")
+        {
+            weight = "null";
+        }
+
+        if (age == "")
+        {
+            age = "null";
+        }
+
+
+        if (m_number != "")
         {
             QString strSql = "UPDATE patient SET "
                     + QString(" sex = ") + sex + ", "
@@ -756,6 +742,10 @@ void MainWindow::on_btnInfoOK_clicked()
             {
                 QMessageBox::information(NULL, "提示", "修改失败！");
             }
+        }
+        else
+        {
+           QMessageBox::information(NULL, "提示", "请先保存病人信息！");
         }
     }
         break;

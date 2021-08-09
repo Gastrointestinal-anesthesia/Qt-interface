@@ -7,7 +7,7 @@ static int getMaxPatientNumber()
     QSqlDatabase db;
     createConnection(db);
 
-    QString strSql = "SELECT MAX(number) AS number FROM patient";
+    QString strSql = "SELECT number FROM patient ORDER BY create_time DESC LIMIT 1";
 
     QSqlQuery result = db.exec(strSql);
     int number = 0;
