@@ -40,6 +40,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    void paintEvent(QPaintEvent *event) override;;
+
     void createChart(QHBoxLayout *qHBoxLayout);
     // 设置 qcustomplot 画图属性，实时
     void setupRealtimeData(QCustomPlot *customPlot, const QString &, double tickStep);
@@ -78,6 +80,10 @@ private slots:
     void on_btnMonitorCancel_clicked();
 
     void on_btnInfoModify_clicked();
+
+    void on_btnMonitorPCancel_clicked();
+
+    void on_btnMonitorSCancel_clicked();
 
 signals:
     void messageSignal(QVariant, QString);     // 信号只能声明不能定义

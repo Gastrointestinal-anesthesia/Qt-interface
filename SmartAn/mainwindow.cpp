@@ -25,6 +25,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    ui->txtInfoAge->setValidator(new QIntValidator(0, 100, this));
+    ui->txtInfoHeight->setValidator(new QIntValidator(0, 220, this));
+    ui->txtInfoWeight->setValidator(new QIntValidator(0, 150, this));
+
+    ui->txtMonitorPropofol->setValidator(new QIntValidator(0, 100, this));
+    ui->txtMonitorSufentanil->setValidator(new QIntValidator(0, 100, this));
+
     setupRealtimeData(ui->widgetRATE, "心率", "血氧", 10);
     setupRealtimeData(ui->widgetPressure, "收缩压", "舒张压", 10);
     setupRealtimeData(ui->widgetBIS, "BIS", 10);
@@ -52,6 +59,22 @@ MainWindow::MainWindow(QWidget *parent) :
     // m_autoResizeHandler->addOtherItem(ui->frame);
     //m_autoResizeHandler->pushAllResizeItem();
     initHiDpi();
+}
+
+void MainWindow::paintEvent(QPaintEvent *event)
+{
+    // QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定开始录制吗？",QMessageBox::Yes|QMessageBox::No);
+//    QPainter p(this->ui->tabBaseInfo);
+//    p.drawLine();
+//    //QPixmap 图片背景透明
+//    QString filePath = QCoreApplication::applicationDirPath();
+//    p.drawPixmap(0, 0, 100, 30, QPixmap(filePath + "/screen.jpg"));
+
+//    QPainter painter(this->ui->widget_2);
+//        QPen pen;
+//        pen.setColor(Qt::red);
+//        painter.setPen(pen);
+//        painter.drawRect(10,10,100,200);
 }
 
 /**
@@ -856,13 +879,19 @@ void MainWindow::on_btnMonitorSOK_clicked()
 
 void MainWindow::on_btnMonitorCancel_clicked()
 {
+
+
+}
+
+void MainWindow::on_btnMonitorPCancel_clicked()
+{
     QMessageBox:: StandardButton btnResult= QMessageBox::information(NULL, "提示", "确定撤销吗？",QMessageBox::Yes|QMessageBox::No);
 
     switch (btnResult)
     {
     case QMessageBox::Yes:
     {
-        QString strSql = "SELECT COUNT(*) AS count FROM patient_medicine WHERE number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
+        QString strSql = "SELECT COUNT(*) AS count FROM patient_medicine WHERE type = 0 AND number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
         bool result = judgePatientMedicine(strSql);
         if (!result)
         {
@@ -873,10 +902,10 @@ void MainWindow::on_btnMonitorCancel_clicked()
         vector<PatientMedicine> vecPatientMedicine;
 
         strSql = "SELECT t.name, p.value, p.create_time FROM patient_medicine AS p LEFT JOIN medicine_type AS t ON p.type = t.type"
-                + QString(" WHERE p.number = ") + m_number + " ORDER BY p.create_time DESC LIMIT 1 ";
+                + QString(" WHERE p.type = 0 AND p.number = ") + m_number + " ORDER BY p.create_time DESC LIMIT 1 ";
         selectMedicineInfo(strSql, vecPatientMedicine);
 
-        strSql = "DELETE FROM patient_medicine WHERE number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
+        strSql = "DELETE FROM patient_medicine WHERE type = 0 AND number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
         result = deleteSql(strSql);
         if (result)
         {
@@ -895,5 +924,47 @@ void MainWindow::on_btnMonitorCancel_clicked()
     default:
         break;
     }
+}
 
+void MainWindow::on_btnMonitorSCancel_clicked()
+{
+    QMessageBox:: StandardButton btnResult= QMessageBox::information(NULL, "提示", "确定撤销吗？",QMessageBox::Yes|QMessageBox::No);
+
+    switch (btnResult)
+    {
+    case QMessageBox::Yes:
+    {
+        QString strSql = "SELECT COUNT(*) AS count FROM patient_medicine WHERE type = 1 AND number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
+        bool result = judgePatientMedicine(strSql);
+        if (!result)
+        {
+            QMessageBox::information(NULL, "提示", "暂无数据可撤销！");
+            return;
+        }
+
+        vector<PatientMedicine> vecPatientMedicine;
+
+        strSql = "SELECT t.name, p.value, p.create_time FROM patient_medicine AS p LEFT JOIN medicine_type AS t ON p.type = t.type"
+                + QString(" WHERE p.type = 1 AND p.number = ") + m_number + " ORDER BY p.create_time DESC LIMIT 1 ";
+        selectMedicineInfo(strSql, vecPatientMedicine);
+
+        strSql = "DELETE FROM patient_medicine WHERE type = 1 AND number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
+        result = deleteSql(strSql);
+        if (result)
+        {
+            ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
+                    + " "  + vecPatientMedicine[0].value +  " ml 成功！");
+            QMessageBox::information(NULL, "提示", "撤销成功！");
+        }
+        else
+        {
+            ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
+                    + " "  + vecPatientMedicine[0].value +  " ml 失败！");
+            QMessageBox::information(NULL, "提示", "撤销失败！");
+        }
+
+    } break;
+    default:
+        break;
+    }
 }
