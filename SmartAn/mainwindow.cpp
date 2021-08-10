@@ -696,9 +696,10 @@ void MainWindow::on_btnInfoStop_clicked()
 
 void MainWindow::on_btnInfoModify_clicked()
 {
-    QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定修改吗？",QMessageBox::Yes|QMessageBox::No);
+    QMessageBox:: StandardButton btnResult= QMessageBox::information(NULL, "提示", "确定修改吗？",QMessageBox::Yes|QMessageBox::No);
     QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
-    switch (result)
+
+    switch (btnResult)
     {
     case QMessageBox::Yes:
     {
@@ -745,7 +746,7 @@ void MainWindow::on_btnInfoModify_clicked()
         }
         else
         {
-           QMessageBox::information(NULL, "提示", "请先保存病人信息！");
+            QMessageBox::information(NULL, "提示", "请先保存病人信息！");
         }
     }
         break;
@@ -820,32 +821,44 @@ void MainWindow::on_btnMonitorSOK_clicked()
 
 void MainWindow::on_btnMonitorCancel_clicked()
 {
-    QString strSql = "SELECT COUNT(*) AS count FROM patient_medicine WHERE number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
-    bool result = judgePatientMedicine(strSql);
-    if (!result)
+    QMessageBox:: StandardButton btnResult= QMessageBox::information(NULL, "提示", "确定撤销吗？",QMessageBox::Yes|QMessageBox::No);
+
+    switch (btnResult)
     {
-        QMessageBox::information(NULL, "提示", "暂无数据可撤销！");
-        return;
+    case QMessageBox::Yes:
+    {
+        QString strSql = "SELECT COUNT(*) AS count FROM patient_medicine WHERE number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
+        bool result = judgePatientMedicine(strSql);
+        if (!result)
+        {
+            QMessageBox::information(NULL, "提示", "暂无数据可撤销！");
+            return;
+        }
+
+        vector<PatientMedicine> vecPatientMedicine;
+
+        strSql = "SELECT t.name, p.value, p.create_time FROM patient_medicine AS p LEFT JOIN medicine_type AS t ON p.type = t.type"
+                + QString(" WHERE p.number = ") + m_number + " ORDER BY p.create_time DESC LIMIT 1 ";
+        selectMedicineInfo(strSql, vecPatientMedicine);
+
+        strSql = "DELETE FROM patient_medicine WHERE number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
+        result = deleteSql(strSql);
+        if (result)
+        {
+            ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
+                    + " "  + vecPatientMedicine[0].value +  " ml 成功！");
+            QMessageBox::information(NULL, "提示", "撤销成功！");
+        }
+        else
+        {
+            ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
+                    + " "  + vecPatientMedicine[0].value +  " ml 失败！");
+            QMessageBox::information(NULL, "提示", "撤销失败！");
+        }
+
+    } break;
+    default:
+        break;
     }
 
-    vector<PatientMedicine> vecPatientMedicine;
-
-    strSql = "SELECT t.name, p.value, p.create_time FROM patient_medicine AS p LEFT JOIN medicine_type AS t ON p.type = t.type"
-            + QString(" WHERE p.number = ") + m_number + " ORDER BY p.create_time DESC LIMIT 1 ";
-    selectMedicineInfo(strSql, vecPatientMedicine);
-
-    strSql = "DELETE FROM patient_medicine WHERE number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
-    result = deleteSql(strSql);
-    if (result)
-    {
-        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
-                + " "  + vecPatientMedicine[0].value +  " ml 成功！");
-        QMessageBox::information(NULL, "提示", "撤销成功！");
-    }
-    else
-    {
-        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
-                + " "  + vecPatientMedicine[0].value +  " ml 失败！");
-        QMessageBox::information(NULL, "提示", "撤销失败！");
-    }
 }

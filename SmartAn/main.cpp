@@ -61,9 +61,12 @@ int main(int argc, char *argv[])
     QElapsedTimer timer;
     timer.start();
     while(timer.elapsed() < (delayTime * 1000))
-    {
+    { 
         a.processEvents();
     }
+
+
+    screen.hide();
 
     QString configFileName = filePath + "/config.ini";
     g_psetting = new QSettings(configFileName, QSettings::IniFormat);
