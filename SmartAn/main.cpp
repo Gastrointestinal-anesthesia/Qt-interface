@@ -52,10 +52,10 @@ int main(int argc, char *argv[])
     QSplashScreen screen(pixmap);
     screen.show();
     screen.setFont(QFont("宋体", 30, QFont::Bold));
-    QColor color;
+    //QColor color;
 
-    color.setRgb(0,100,149,237);
-    screen.showMessage("麻醉辅助系统", Qt::AlignCenter, color);
+    //color.setRgb(0,100,149,237);
+    //screen.showMessage("麻醉辅助系统", Qt::AlignCenter, color);
 
     int delayTime = 3;
     QElapsedTimer timer;
