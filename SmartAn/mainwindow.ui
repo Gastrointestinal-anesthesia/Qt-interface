@@ -438,7 +438,7 @@ font-size: 15px; </string>
          </rect>
         </property>
        </widget>
-       <widget class="QLabel" name="lblMonitorDIAPTip">
+       <widget class="QLabel" name="lblMonitorSYSPTip">
         <property name="geometry">
          <rect>
           <x>660</x>
@@ -453,10 +453,10 @@ font-size: 15px; </string>
          </font>
         </property>
         <property name="text">
-         <string>舒张压：</string>
+         <string>收缩压：</string>
         </property>
        </widget>
-       <widget class="QLabel" name="lblMonitorDIAPCurrentVal">
+       <widget class="QLabel" name="lblMonitorSYSPCurrentVal">
         <property name="geometry">
          <rect>
           <x>740</x>
@@ -479,7 +479,7 @@ font-size: 15px; </string>
          <string/>
         </property>
        </widget>
-       <widget class="QLabel" name="lblMonitorSYSPTip">
+       <widget class="QLabel" name="lblMonitorDIAPTip">
         <property name="geometry">
          <rect>
           <x>1000</x>
@@ -494,10 +494,10 @@ font-size: 15px; </string>
          </font>
         </property>
         <property name="text">
-         <string>收缩压：</string>
+         <string>舒张压：</string>
         </property>
        </widget>
-       <widget class="QLabel" name="lblMonitorSYSPCurrentVal">
+       <widget class="QLabel" name="lblMonitorDIAPCurrentVal">
         <property name="geometry">
          <rect>
           <x>1100</x>
@@ -892,26 +892,6 @@ font-size: 15px; </string>
        <attribute name="title">
         <string>历史数据</string>
        </attribute>
-       <widget class="QCustomPlot" name="widgetHisPressure" native="true">
-        <property name="geometry">
-         <rect>
-          <x>540</x>
-          <y>90</y>
-          <width>761</width>
-          <height>281</height>
-         </rect>
-        </property>
-       </widget>
-       <widget class="QCustomPlot" name="widgetHisBIS" native="true">
-        <property name="geometry">
-         <rect>
-          <x>540</x>
-          <y>460</y>
-          <width>761</width>
-          <height>281</height>
-         </rect>
-        </property>
-       </widget>
        <widget class="QPushButton" name="btnHisQuery">
         <property name="geometry">
          <rect>
@@ -1056,6 +1036,27 @@ font-size: 15px; </string>
          </property>
         </widget>
         <widget class="QLineEdit" name="txtHisNumber"/>
+       </widget>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>580</x>
+          <y>150</y>
+          <width>761</width>
+          <height>521</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QCustomPlot" name="widgetHisRATE" native="true"/>
+         </item>
+         <item>
+          <widget class="QCustomPlot" name="widgetHisPressure" native="true"/>
+         </item>
+         <item>
+          <widget class="QCustomPlot" name="widgetHisBIS" native="true"/>
+         </item>
+        </layout>
        </widget>
       </widget>
      </widget>

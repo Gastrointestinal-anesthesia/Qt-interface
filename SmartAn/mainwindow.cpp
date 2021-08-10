@@ -25,12 +25,13 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    setupRealtimeData(ui->widgetRATE, "心率", "血氧");
-    setupRealtimeData(ui->widgetPressure, "舒张压", "收缩压");
-    setupRealtimeData(ui->widgetBIS, "BIS", "");
+    setupRealtimeData(ui->widgetRATE, "心率", "血氧", 10);
+    setupRealtimeData(ui->widgetPressure, "收缩压", "舒张压", 10);
+    setupRealtimeData(ui->widgetBIS, "BIS", 10);
 
-    setupRealtimeData(ui->widgetHisPressure, "舒张压", "收缩压");
-    setupRealtimeData(ui->widgetHisBIS, "血氧", "BIS");
+    setupRealtimeData(ui->widgetHisRATE, "心率", "血氧", 80);
+    setupRealtimeData(ui->widgetHisPressure, "收缩压", "舒张压", 80);
+    setupRealtimeData(ui->widgetHisBIS, "BIS", 80);
 
     ui->widgetPressure->replot();
     connect(this, SIGNAL(messageSignal(QVariant, QString)), this, SLOT(recvMsg(QVariant, QString)), Qt::QueuedConnection);
@@ -57,9 +58,31 @@ MainWindow::MainWindow(QWidget *parent) :
  * @brief 画图初始化
  * @param customPlot
  * @param first
+ */
+void MainWindow::setupRealtimeData(QCustomPlot *customPlot, const QString& first, double tickStep)
+{
+    customPlot->addGraph(); // blue line
+    customPlot->graph(0)->setPen(QPen(QColor(100,149,237)));
+    customPlot->graph(0)->setName(first);
+
+    customPlot->yAxis->setRange(0, 100);
+
+    customPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
+    customPlot->xAxis->setDateTimeFormat("hh:mm:ss");
+    customPlot->xAxis->setAutoTickStep(false);
+    customPlot->xAxis->setTickStep(tickStep);
+    customPlot->axisRect()->setupFullAxesBox();
+
+    customPlot->legend->setVisible(true);
+}
+
+/**
+ * @brief 画图初始化
+ * @param customPlot
+ * @param first
  * @param second
  */
-void MainWindow::setupRealtimeData(QCustomPlot *customPlot, const QString& first, const QString& second)
+void MainWindow::setupRealtimeData(QCustomPlot *customPlot, const QString& first, const QString& second, double tickStep)
 {
     customPlot->addGraph(); // blue line
     customPlot->graph(0)->setPen(QPen(QColor(100,149,237)));
@@ -76,7 +99,7 @@ void MainWindow::setupRealtimeData(QCustomPlot *customPlot, const QString& first
     customPlot->xAxis->setTickLabelType(QCPAxis::ltDateTime);
     customPlot->xAxis->setDateTimeFormat("hh:mm:ss");
     customPlot->xAxis->setAutoTickStep(false);
-    customPlot->xAxis->setTickStep(8);
+    customPlot->xAxis->setTickStep(tickStep);
     customPlot->axisRect()->setupFullAxesBox();
 
     // make left and bottom axes transfer their ranges to right and top axes:
@@ -91,7 +114,7 @@ void MainWindow::setupRealtimeData(QCustomPlot *customPlot, const QString& first
 
 void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
                                    double SYSP,double SpO2,
-                                   double BISr)
+                                   double BIS)
 {
     //key的单位是秒
     double key = QDateTime::currentDateTime().toMSecsSinceEpoch()/1000.0;
@@ -100,14 +123,7 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
     /*******************************************************/
     if (RATE != MESSAGE_INVALID)
     {
-        if (RATE >= g_message_RATE)
-        {
-
-        }
-        else
-        {
-            ui->widgetRATE->graph(0)->addData(key, RATE); // 添加数据1到曲线1
-        }
+        ui->widgetRATE->graph(0)->addData(key, RATE); // 添加数据1到曲线1
     }
     if (SpO2 != MESSAGE_INVALID)
     {
@@ -127,19 +143,19 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
     //这里的8，是指横坐标时间宽度为8秒，如果想要横坐标显示更多的时间
     //就把8调整为比较大到值，比如要显示60秒，那就改成60。
     //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
-    ui->widgetRATE->yAxis->setRange(0, 100);
+    ui->widgetRATE->yAxis->setRange(0, 150);
     ui->widgetRATE->xAxis->setRange(key+0.25, 60, Qt::AlignRight);//设定x轴的范围
     ui->widgetRATE->replot();
 
 
     /*******************************************************/
-    if (DIAP != MESSAGE_INVALID)
-    {
-        ui->widgetPressure->graph(0)->addData(key, DIAP);//添加数据1到曲线1
-    }
     if (SYSP != MESSAGE_INVALID)
     {
-        ui->widgetPressure->graph(1)->addData(key, SYSP);//添加数据2到曲线2
+        ui->widgetPressure->graph(0)->addData(key, SYSP);//添加数据1到曲线1
+    }
+    if (DIAP != MESSAGE_INVALID)
+    {
+        ui->widgetPressure->graph(1)->addData(key, DIAP);//添加数据2到曲线2
     }
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
@@ -154,15 +170,15 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
     //这里的8，是指横坐标时间宽度为8秒，如果想要横坐标显示更多的时间
     //就把8调整为比较大到值，比如要显示60秒，那就改成60。
     //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
-    ui->widgetPressure->yAxis->setRange(0, 100);
+    ui->widgetPressure->yAxis->setRange(0, 180);
     ui->widgetPressure->xAxis->setRange(key+0.25, 60, Qt::AlignRight);//设定x轴的范围
     ui->widgetPressure->replot();
 
 
     /*******************************************************/
-    if (SpO2 != MESSAGE_INVALID)
+    if (BIS != MESSAGE_INVALID)
     {
-        ui->widgetBIS->graph(0)->addData(key, SpO2); // 添加数据1到曲线1
+        ui->widgetBIS->graph(0)->addData(key, BIS); // 添加数据1到曲线1
     }
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
@@ -207,9 +223,9 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
         ui->lblMonitorSYSPCurrentVal->setText(QString::number(SYSP));
     }
 
-    if (BISr != MESSAGE_INVALID)
+    if (BIS != MESSAGE_INVALID)
     {
-        ui->lblMonitorBISCurrentVal->setText(QString::number(BISr));
+        ui->lblMonitorBISCurrentVal->setText(QString::number(BIS));
     }
 }
 
@@ -228,16 +244,40 @@ void  MainWindow::historyShow(QDateTime datatime, double RATE,double DIAP,
 {
     // key的单位是秒
     double key = datatime.toMSecsSinceEpoch()/1000.0;
-    qsrand(QTime::currentTime().msec() + QTime::currentTime().second() * 10000);
 
     // if (ui->checkBox_temp->isChecked())
-    ui->widgetHisPressure->graph(0)->addData(key, RATE);//添加数据1到曲线1
+    if(RATE != MESSAGE_INVALID) ui->widgetHisRATE->graph(0)->addData(key, RATE);//添加数据1到曲线1
     // if (ui->checkBox_hui->isChecked())
-    ui->widgetHisPressure->graph(1)->addData(key, DIAP);//添加数据2到曲线2
+    if(SpO2 != MESSAGE_INVALID) ui->widgetHisRATE->graph(1)->addData(key, SpO2);//添加数据2到曲线2
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
-    ui->widgetHisPressure->graph(0)->removeDataBefore(key-60);
-    ui->widgetHisPressure->graph(1)->removeDataBefore(key-60);
+    ui->widgetHisRATE->graph(0)->removeDataBefore(key-600);
+    ui->widgetHisRATE->graph(1)->removeDataBefore(key-600);
+
+    //自动设定graph(1)曲线y轴的范围，如果不设定，有可能看不到图像
+    //也可以用ui->widgetPressure->yAxis->setRange(up,low)手动设定y轴范围
+    ui->widgetHisRATE->graph(0)->rescaleValueAxis();
+    ui->widgetHisRATE->graph(1)->rescaleValueAxis(true);
+
+    //这里的8，是指横坐标时间宽度为8秒，如果想要横坐标显示更多的时间
+    //就把8调整为比较大到值，比如要显示60秒，那就改成60。
+    //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
+    ui->widgetHisRATE->yAxis->setRange(0, 150);
+    ui->widgetHisRATE->xAxis->setRange(key+0.25, 600, Qt::AlignRight);//设定x轴的范围
+    ui->widgetHisRATE->replot();
+
+
+    /*******************************************************/
+
+
+    // if (ui->checkBox_temp->isChecked())
+    if(SYSP != MESSAGE_INVALID) ui->widgetHisPressure->graph(0)->addData(key, SYSP);//添加数据1到曲线1
+    // if (ui->checkBox_hui->isChecked())
+    if(DIAP != MESSAGE_INVALID) ui->widgetHisPressure->graph(1)->addData(key, DIAP);//添加数据2到曲线2
+    //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
+    //才能起到想要的效果，可以调整这两个值，观察显示的效果。
+    ui->widgetHisPressure->graph(0)->removeDataBefore(key-600);
+    ui->widgetHisPressure->graph(1)->removeDataBefore(key-600);
 
     //自动设定graph(1)曲线y轴的范围，如果不设定，有可能看不到图像
     //也可以用ui->widgetPressure->yAxis->setRange(up,low)手动设定y轴范围
@@ -247,26 +287,21 @@ void  MainWindow::historyShow(QDateTime datatime, double RATE,double DIAP,
     //这里的8，是指横坐标时间宽度为8秒，如果想要横坐标显示更多的时间
     //就把8调整为比较大到值，比如要显示60秒，那就改成60。
     //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
-    ui->widgetHisPressure->yAxis->setRange(0, 100);
-    ui->widgetHisPressure->xAxis->setRange(key+0.25, 60, Qt::AlignRight);//设定x轴的范围
+    ui->widgetHisPressure->yAxis->setRange(0, 180);
+    ui->widgetHisPressure->xAxis->setRange(key+0.25, 600, Qt::AlignRight);//设定x轴的范围
     ui->widgetHisPressure->replot();
 
 
     /*******************************************************/
 
-    // if (ui->checkBox_temp->isChecked())
-    ui->widgetHisBIS->graph(0)->addData(key, SpO2);//添加数据1到曲线1
     // if (ui->checkBox_hui->isChecked())
-    ui->widgetHisBIS->graph(1)->addData(key, BIS);//添加数据2到曲线2
+    ui->widgetHisBIS->graph(0)->addData(key, BIS);//添加数据1到曲线1
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
     ui->widgetHisBIS->graph(0)->removeDataBefore(key-60);
-    ui->widgetHisBIS->graph(1)->removeDataBefore(key-60);
 
-    //自动设定graph(1)曲线y轴的范围，如果不设定，有可能看不到图像
     //也可以用ui->widgetPressure->yAxis->setRange(up,low)手动设定y轴范围
-    ui->widgetHisBIS->graph(0)->rescaleValueAxis();
-    ui->widgetHisBIS->graph(1)->rescaleValueAxis(true);
+    ui->widgetHisBIS->graph(0)->rescaleValueAxis(true);
 
     //这里的8，是指横坐标时间宽度为8秒，如果想要横坐标显示更多的时间
     //就把8调整为比较大到值，比如要显示60秒，那就改成60。
@@ -526,7 +561,7 @@ void MainWindow::on_tblHisPatient_itemClicked(QTableWidgetItem *item)
         {
             for (auto it = vecPatientValue.begin(); it != vecPatientValue.end(); ++it)
             {
-                historyShow(it->strCreateTime,it->RATE,it->DIAP,it->SYSP,it->SpO2,it->BISr);
+                historyShow(it->strCreateTime,it->RATE,it->DIAP,it->SYSP,it->SpO2,it->BIS);
             }
         }
 

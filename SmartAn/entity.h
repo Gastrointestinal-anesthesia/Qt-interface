@@ -1,6 +1,9 @@
 #ifndef ENTITY_H
 #define ENTITY_H
 
+#include <QString>
+#include <QDateTime>
+
 typedef struct patient
 {
     QString strNumber;
@@ -17,7 +20,7 @@ typedef struct patient_value
     int DIAP;
     int SYSP;
     int SpO2;
-    int BISr;
+    int BIS;
 
 }PatientValue;
 

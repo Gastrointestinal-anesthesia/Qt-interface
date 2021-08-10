@@ -64,7 +64,7 @@ bool selectPatientValue(QString strSql, std::vector<PatientValue>& vecPatientVal
         patientValue.DIAP= result.value("DIAP").toInt();
         patientValue.SYSP= result.value("SYSP").toInt();
         patientValue.SpO2= result.value("SpO2").toInt();
-        patientValue.BISr= result.value("BISr").toInt();
+        patientValue.BIS= result.value("BIS").toInt();
         patientValue.strCreateTime= result.value("create_time").toDateTime();
 
         vecPatientValue.push_back(patientValue);

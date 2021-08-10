@@ -42,7 +42,8 @@ public:
 
     void createChart(QHBoxLayout *qHBoxLayout);
     // 设置 qcustomplot 画图属性，实时
-    void setupRealtimeData(QCustomPlot *customPlot, const QString &, const QString &);
+    void setupRealtimeData(QCustomPlot *customPlot, const QString &, double tickStep);
+    void setupRealtimeData(QCustomPlot *customPlot, const QString &, const QString &, double tickStep);
     void realtimeDataSlot(double RATE, double DIAP, double SYSP, double SpO2, double BIS);
 
     void sendData( smart_topic::Anesthesia* pData);
