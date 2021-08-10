@@ -40,6 +40,8 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
+    void paintEvent(QPaintEvent *event) override;;
+
     void createChart(QHBoxLayout *qHBoxLayout);
     // 设置 qcustomplot 画图属性，实时
     void setupRealtimeData(QCustomPlot *customPlot, const QString &, const QString &);
