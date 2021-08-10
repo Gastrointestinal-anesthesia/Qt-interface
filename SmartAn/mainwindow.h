@@ -80,6 +80,10 @@ private slots:
 
     void on_btnInfoModify_clicked();
 
+    void on_btnMonitorPCancel_clicked();
+
+    void on_btnMonitorSCancel_clicked();
+
 signals:
     void messageSignal(QVariant, QString);     // 信号只能声明不能定义
 public slots:
