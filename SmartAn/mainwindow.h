@@ -66,8 +66,6 @@ private slots:
 
     void on_btnHisQuery_clicked();
 
-    void on_btnInfoOK_clicked();
-
     void on_btnInfoStart_clicked();
 
     void on_btnInfoStop_clicked();
@@ -75,10 +73,6 @@ private slots:
     void on_btnMonitorPOK_clicked();
 
     void on_btnMonitorSOK_clicked();
-
-    void on_btnMonitorPCancel_clicked();
-
-    void on_btnMonitorSCancel_clicked();
 
     void on_btnMonitorCancel_clicked();
 
