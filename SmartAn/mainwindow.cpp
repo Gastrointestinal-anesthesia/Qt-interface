@@ -26,8 +26,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     ui->txtInfoAge->setValidator(new QIntValidator(0, 100, this));
-    ui->txtInfoHeight->setValidator(new QIntValidator(0, 220, this));
-    ui->txtInfoWeight->setValidator(new QIntValidator(0, 150, this));
+    ui->txtInfoHeight->setValidator(new QIntValidator(100, 220, this));
+    ui->txtInfoWeight->setValidator(new QIntValidator(20, 150, this));
 
     ui->txtMonitorPropofol->setValidator(new QIntValidator(0, 100, this));
     ui->txtMonitorSufentanil->setValidator(new QIntValidator(0, 100, this));
@@ -865,12 +865,12 @@ void MainWindow::on_btnMonitorSOK_clicked()
     bool result = insertSql(strSql);
     if (result)
     {
-        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 舒芬太尼 " + ui->txtMonitorPropofol->text() + " ml 成功！");
+        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 舒芬太尼 " + ui->txtMonitorSufentanil->text() + " ml 成功！");
         //QMessageBox::information(NULL, "提示", "保存成功！");
     }
     else
     {
-        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 舒芬太尼 " + ui->txtMonitorPropofol->text() + " ml 失败！");
+        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 舒芬太尼 " + ui->txtMonitorSufentanil->text() + " ml 失败！");
         QMessageBox::information(NULL, "提示", "保存失败！");
 
     }
