@@ -800,7 +800,7 @@ void MainWindow::on_btnMonitorPOK_clicked()
     if (result)
     {
         ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 丙泊酚 " + ui->txtMonitorPropofol->text() + " ml 成功！");
-        QMessageBox::information(NULL, "提示", "保存成功！");
+        //QMessageBox::information(NULL, "提示", "保存成功！");
     }
     else
     {
@@ -831,7 +831,7 @@ void MainWindow::on_btnMonitorSOK_clicked()
     if (result)
     {
         ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 舒芬太尼 " + ui->txtMonitorPropofol->text() + " ml 成功！");
-        QMessageBox::information(NULL, "提示", "保存成功！");
+        //QMessageBox::information(NULL, "提示", "保存成功！");
     }
     else
     {

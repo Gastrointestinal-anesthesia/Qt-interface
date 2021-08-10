@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-CONFIG += C++11
+CONFIG += C++17
 QT       += core gui charts sql
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets printsupport
