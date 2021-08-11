@@ -31,7 +31,7 @@ color: rgb(211, 215, 207);</string>
 color: rgb(211, 215, 207);</string>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tabBaseInfo">
        <attribute name="title">
@@ -733,7 +733,7 @@ font-size: 15px; </string>
          <rect>
           <x>260</x>
           <y>580</y>
-          <width>21</width>
+          <width>31</width>
           <height>31</height>
          </rect>
         </property>
@@ -743,7 +743,7 @@ font-size: 15px; </string>
          </font>
         </property>
         <property name="text">
-         <string>ml</string>
+         <string>mg</string>
         </property>
        </widget>
        <widget class="QLabel" name="lblMonitorSMl">
@@ -761,7 +761,7 @@ font-size: 15px; </string>
          </font>
         </property>
         <property name="text">
-         <string>ml</string>
+         <string>ug</string>
         </property>
        </widget>
        <widget class="QPushButton" name="btnMonitorPOK">
