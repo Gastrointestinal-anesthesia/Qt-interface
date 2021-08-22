@@ -40,7 +40,9 @@ HEADERS += \
         config.h \
         connection.h \
         entity.h \
+        event_type_sql.h \
         mainwindow.h \
+        medicine_type_sql.h \
         message_thread.hpp \
         patient_medicine_sql.h \
         patient_sql.h \

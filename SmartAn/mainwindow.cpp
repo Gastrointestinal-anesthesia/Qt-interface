@@ -12,6 +12,8 @@
 #include "entity.h"
 #include "config.h"
 #include "connection.h"
+#include "medicine_type_sql.h"
+#include "event_type_sql.h"
 #include "patient_sql.h"
 #include "patient_value_sql.h"
 #include "patient_medicine_sql.h"
@@ -25,22 +27,24 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    m_medicineTypeOKMapper = new QSignalMapper();
+    m_medicineTypeCancelMapper = new QSignalMapper();
+    m_eventTypeBtnOKMapper = new QSignalMapper();
+    m_eventTypeTxtOKMapper = new QSignalMapper();
+
+    generateMedicineControl();
+    generateEventControl();
+
     ui->txtInfoAge->setValidator(new QIntValidator(0, 100, this));
     ui->txtInfoHeight->setValidator(new QIntValidator(100, 220, this));
     ui->txtInfoWeight->setValidator(new QIntValidator(20, 150, this));
 
-    ui->txtMonitorPropofol->setValidator(new QIntValidator(0, 100, this));
-    ui->txtMonitorSufentanil->setValidator(new QIntValidator(0, 100, this));
-
-    setupRealtimeData(ui->widgetRATE, "心率", "血氧", 10);
-    setupRealtimeData(ui->widgetPressure, "收缩压", "舒张压", 10);
     setupRealtimeData(ui->widgetBIS, "BIS", 10);
 
     setupRealtimeData(ui->widgetHisRATE, "心率", "血氧", 80);
     setupRealtimeData(ui->widgetHisPressure, "收缩压", "舒张压", 80);
     setupRealtimeData(ui->widgetHisBIS, "BIS", 80);
 
-    ui->widgetPressure->replot();
     connect(this, SIGNAL(messageSignal(QVariant, QString)), this, SLOT(recvMsg(QVariant, QString)), Qt::QueuedConnection);
     m_thread.setObjectName("recvMsg");
     m_thread.setParent(this);
@@ -61,20 +65,164 @@ MainWindow::MainWindow(QWidget *parent) :
     initHiDpi();
 }
 
+void MainWindow::generateMedicineControl()
+{
+    QString strSql = "SELECT * FROM medicine_type";
+    selectMedicineType(strSql, m_vecMedicineType);
+
+    QFont font;
+    font.setPointSize(12);
+
+    int baseY = 520;
+    int incY = 40;
+    for (int i = 0; i < m_vecMedicineType.size(); ++i)
+    {
+        QLabel* qTipLabel = new QLabel(ui->tabMonitor);
+        QString objName = QString("lblMonitorMedicine") + m_vecMedicineType[i].en_name;
+        qTipLabel->setObjectName(objName);
+        qTipLabel->setText(m_vecMedicineType[i].cn_name + "：");
+        qTipLabel->setGeometry(QRect(40, baseY, 100, 30));
+        qTipLabel->setFont(font);
+
+        QLineEdit* qLineEdit = new QLineEdit(ui->tabMonitor);
+        objName = QString("txtMonitorMedicine") + m_vecMedicineType[i].en_name;
+        qLineEdit->setObjectName(objName);
+        qLineEdit->setGeometry(QRect(140, baseY, 120, 30));
+        qLineEdit->setValidator(new QIntValidator(0, 100, this));
+        qLineEdit->setFont(font);
+
+        QLabel* qUnitLabel = new QLabel(ui->tabMonitor);
+        objName = QString("lblMonitorMedicineUnit") + m_vecMedicineType[i].en_name;
+        qUnitLabel->setObjectName(objName);
+        qUnitLabel->setText(m_vecMedicineType[i].unit);
+        qUnitLabel->setGeometry(QRect(270, baseY, 30, 30));
+        qUnitLabel->setFont(font);
+
+        QPushButton* btnOK = new QPushButton(ui->tabMonitor);
+        objName = QString("btnMonitorMedicineOK") + m_vecMedicineType[i].en_name;
+        btnOK->setObjectName(objName);
+        btnOK->setText("确定");
+        btnOK->setGeometry(QRect(310, baseY, 80, 30));
+        btnOK->setFont(font);
+        btnOK->setStyleSheet(QLatin1String("width: 270px; \n"
+                                           "height: 30px; \n"
+                                           "border-width: 2px; \n"
+                                           "border-radius: 3px; \n"
+                                           "background: #36648B; \n"
+                                           "color: white; \n"
+                                           "font-size: 13px; "));
+        connect(btnOK, SIGNAL(clicked()), m_medicineTypeOKMapper, SLOT(map()));
+
+        QPushButton* btnCancel = new QPushButton(ui->tabMonitor);
+        objName = QString("btnMonitorMedicineCancel") + m_vecMedicineType[i].en_name;
+        btnCancel->setObjectName(objName);
+        btnCancel->setText("取消");
+        btnCancel->setGeometry(QRect(400, baseY, 80, 30));
+        btnCancel->setFont(font);
+        btnCancel->setStyleSheet(QLatin1String("width: 270px; \n"
+                                               "height: 30px; \n"
+                                               "border-width: 2px; \n"
+                                               "border-radius: 3px; \n"
+                                               "background: #36648B; \n"
+                                               "color: white; \n"
+                                               "font-size: 13px; "));
+        connect(btnCancel, SIGNAL(clicked()), m_medicineTypeCancelMapper, SLOT(map()));
+
+        baseY += incY;
+        m_medicineTypeOKMapper->setMapping(btnOK, m_vecMedicineType[i].type);
+        m_medicineTypeCancelMapper->setMapping(btnCancel, m_vecMedicineType[i].type);
+    }
+
+    connect(m_medicineTypeOKMapper, SIGNAL(mapped(int)), this, SLOT(on_btnMonitorOK_clicked(int)));
+    connect(m_medicineTypeCancelMapper, SIGNAL(mapped(int)), this, SLOT(on_btnMonitorCancel_clicked(int)));
+}
+
+void MainWindow::generateEventControl()
+{
+    QString strSql = "SELECT * FROM event_type WHERE operate_type = 0";
+    selectEventType(strSql, m_vecBtnEventType);
+
+    QFont font;
+    font.setPointSize(12);
+
+    int baseX = 540;
+    int baseY = 520;
+    int incX = 120;
+    int incY = 40;
+    for (int i = 0; i < m_vecBtnEventType.size(); ++i)
+    {
+        QPushButton* btnOK = new QPushButton(ui->tabMonitor);
+        QString objName = QString("btnMonitorEventOK") + m_vecBtnEventType[i].en_name;
+        btnOK->setObjectName(objName);
+        btnOK->setText(m_vecBtnEventType[i].cn_name);
+        btnOK->setGeometry(QRect(baseX, baseY, 80, 30));
+        btnOK->setFont(font);
+        btnOK->setStyleSheet(QLatin1String("width: 270px; \n"
+                                           "height: 30px; \n"
+                                           "border-width: 2px; \n"
+                                           "border-radius: 3px; \n"
+                                           "background: #36648B; \n"
+                                           "color: white; \n"
+                                           "font-size: 13px; "));
+        connect(btnOK, SIGNAL(clicked()), m_eventTypeBtnOKMapper, SLOT(map()));
+
+        baseX += incX;
+        m_eventTypeBtnOKMapper->setMapping(btnOK, m_vecBtnEventType[i].type);
+    }
+
+    connect(m_eventTypeBtnOKMapper, SIGNAL(mapped(int)), this, SLOT(on_btnEventOK_clicked(int)));
+
+    strSql = "SELECT * FROM event_type WHERE operate_type = 1";
+    selectEventType(strSql, m_vecTxtEventType);
+
+    baseX = 540;
+    baseY = 600;
+    for (int i = 0; i < m_vecTxtEventType.size(); ++i)
+    {
+        QLineEdit* qLineEdit = new QLineEdit(ui->tabMonitor);
+        QString objName = QString("txtMonitorEvent") + m_vecTxtEventType[i].en_name;
+        qLineEdit->setObjectName(objName);
+        qLineEdit->setGeometry(QRect(baseX, baseY, 200, 30));
+        qLineEdit->setText(m_vecTxtEventType[i].cn_name);
+        qLineEdit->setFont(font);
+
+        QPushButton* btnOK = new QPushButton(ui->tabMonitor);
+        objName = QString("btnMonitorEventOK") + m_vecTxtEventType[i].en_name;
+        btnOK->setObjectName(objName);
+        btnOK->setText("确定");
+        btnOK->setGeometry(QRect(baseX + 300, baseY, 80, 30));
+        btnOK->setFont(font);
+        btnOK->setStyleSheet(QLatin1String("width: 270px; \n"
+                                           "height: 30px; \n"
+                                           "border-width: 2px; \n"
+                                           "border-radius: 3px; \n"
+                                           "background: #36648B; \n"
+                                           "color: white; \n"
+                                           "font-size: 13px; "));
+        connect(btnOK, SIGNAL(clicked()), m_eventTypeTxtOKMapper, SLOT(map()));
+
+        baseY += incY;
+        m_eventTypeTxtOKMapper->setMapping(btnOK, m_vecTxtEventType[i].type);
+    }
+
+    connect(m_eventTypeTxtOKMapper, SIGNAL(mapped(int)), this, SLOT(on_txtEventOK_clicked(int)));
+
+}
+
 void MainWindow::paintEvent(QPaintEvent *event)
 {
     // QMessageBox:: StandardButton result= QMessageBox::information(NULL, "提示", "确定开始录制吗？",QMessageBox::Yes|QMessageBox::No);
-//    QPainter p(this->ui->tabBaseInfo);
-//    p.drawLine();
-//    //QPixmap 图片背景透明
-//    QString filePath = QCoreApplication::applicationDirPath();
-//    p.drawPixmap(0, 0, 100, 30, QPixmap(filePath + "/screen.jpg"));
+    //    QPainter p(this->ui->tabBaseInfo);
+    //    p.drawLine();
+    //    //QPixmap 图片背景透明
+    //    QString filePath = QCoreApplication::applicationDirPath();
+    //    p.drawPixmap(0, 0, 100, 30, QPixmap(filePath + "/screen.jpg"));
 
-//    QPainter painter(this->ui->widget_2);
-//        QPen pen;
-//        pen.setColor(Qt::red);
-//        painter.setPen(pen);
-//        painter.drawRect(10,10,100,200);
+    //    QPainter painter(this->ui->widget_2);
+    //        QPen pen;
+    //        pen.setColor(Qt::red);
+    //        painter.setPen(pen);
+    //        painter.drawRect(10,10,100,200);
 }
 
 /**
@@ -144,61 +292,6 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
     qsrand(QTime::currentTime().msec() + QTime::currentTime().second() * 10000);
 
     /*******************************************************/
-    if (RATE != MESSAGE_INVALID)
-    {
-        ui->widgetRATE->graph(0)->addData(key, RATE); // 添加数据1到曲线1
-    }
-    if (SpO2 != MESSAGE_INVALID)
-    {
-        ui->widgetRATE->graph(1)->addData(key, SpO2); // 添加数据2到曲线2
-    }
-
-    //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
-    //才能起到想要的效果，可以调整这两个值，观察显示的效果。
-    ui->widgetRATE->graph(0)->removeDataBefore(key-60);
-    ui->widgetRATE->graph(1)->removeDataBefore(key-60);
-
-    //自动设定graph(1)曲线y轴的范围，如果不设定，有可能看不到图像
-    //也可以用ui->widgetPressure->yAxis->setRange(up,low)手动设定y轴范围
-    ui->widgetRATE->graph(0)->rescaleValueAxis();
-    ui->widgetRATE->graph(1)->rescaleValueAxis(true);
-
-    //这里的8，是指横坐标时间宽度为8秒，如果想要横坐标显示更多的时间
-    //就把8调整为比较大到值，比如要显示60秒，那就改成60。
-    //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
-    ui->widgetRATE->yAxis->setRange(0, 150);
-    ui->widgetRATE->xAxis->setRange(key+0.25, 60, Qt::AlignRight);//设定x轴的范围
-    ui->widgetRATE->replot();
-
-
-    /*******************************************************/
-    if (SYSP != MESSAGE_INVALID)
-    {
-        ui->widgetPressure->graph(0)->addData(key, SYSP);//添加数据1到曲线1
-    }
-    if (DIAP != MESSAGE_INVALID)
-    {
-        ui->widgetPressure->graph(1)->addData(key, DIAP);//添加数据2到曲线2
-    }
-    //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
-    //才能起到想要的效果，可以调整这两个值，观察显示的效果。
-    ui->widgetPressure->graph(0)->removeDataBefore(key-60);
-    ui->widgetPressure->graph(1)->removeDataBefore(key-60);
-
-    //自动设定graph(1)曲线y轴的范围，如果不设定，有可能看不到图像
-    //也可以用ui->widgetPressure->yAxis->setRange(up,low)手动设定y轴范围
-    ui->widgetPressure->graph(0)->rescaleValueAxis();
-    ui->widgetPressure->graph(1)->rescaleValueAxis(true);
-
-    //这里的8，是指横坐标时间宽度为8秒，如果想要横坐标显示更多的时间
-    //就把8调整为比较大到值，比如要显示60秒，那就改成60。
-    //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
-    ui->widgetPressure->yAxis->setRange(0, 180);
-    ui->widgetPressure->xAxis->setRange(key+0.25, 60, Qt::AlignRight);//设定x轴的范围
-    ui->widgetPressure->replot();
-
-
-    /*******************************************************/
     if (BIS != MESSAGE_INVALID)
     {
         ui->widgetBIS->graph(0)->addData(key, BIS); // 添加数据1到曲线1
@@ -249,6 +342,132 @@ void  MainWindow::realtimeDataSlot(double RATE,double DIAP,
     if (BIS != MESSAGE_INVALID)
     {
         ui->lblMonitorBISCurrentVal->setText(QString::number(BIS));
+    }
+}
+
+/**
+ * @brief 保存病人药物值
+ * @param type
+ * @param name
+ * @param value
+ */
+void MainWindow::savePatientMedicine(int type, QString name, QString value)
+{
+    if (m_number == "")
+    {
+        QMessageBox::information(NULL, "提示", "请先保存病人信息！");
+        return;
+    }
+
+    QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
+
+    QString strValue = value;
+
+    QString strSql = "INSERT INTO patient_medicine (number, type, value, create_time) VALUES('"
+            + m_number + "', "
+            + QString::number(type) + ", '"
+            + strValue + "', '"
+            + datetime->toString("yyyy-MM-dd hh:mm:ss") + "'"
+            + ")";
+
+    bool result = insertSql(strSql);
+    if (result)
+    {
+        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 " + name + " " + strValue + " ml 成功！");
+    }
+    else
+    {
+        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 " + name + " " + strValue  + " ml 失败！");
+        QMessageBox::information(NULL, "提示", "保存失败！");
+    }
+}
+
+/**
+ * @brief 撤销病人药物值
+ * @param type
+ */
+void MainWindow::cancelPatientMedicine(int type)
+{
+    QMessageBox:: StandardButton btnResult= QMessageBox::information(NULL, "提示", "确定撤销吗？",QMessageBox::Yes|QMessageBox::No);
+
+    switch (btnResult)
+    {
+    case QMessageBox::Yes:
+    {
+        QString strSql = "SELECT COUNT(*) AS count FROM patient_medicine WHERE type = " +  QString::number(type)
+                + QString(" AND number = '") + m_number
+                + "' ORDER BY create_time DESC LIMIT 1 ";
+        bool result = judgePatientMedicine(strSql);
+        if (!result)
+        {
+            QMessageBox::information(NULL, "提示", "暂无数据可撤销！");
+            return;
+        }
+
+        vector<PatientMedicine> vecPatientMedicine;
+
+        strSql = "SELECT t.cn_name, p.value, p.create_time FROM patient_medicine AS p LEFT JOIN medicine_type AS t ON p.type = t.type"
+                + QString(" WHERE p.type = ") + QString::number(type)+ " AND p.number = " + m_number + " ORDER BY p.create_time DESC LIMIT 1 ";
+
+        selectMedicineInfo(strSql, vecPatientMedicine);
+
+        strSql = "DELETE FROM patient_medicine WHERE type = " +  QString::number(type) + " AND number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
+        result = deleteSql(strSql);
+        if (vecPatientMedicine.size() == 1)
+        {
+            if (result)
+            {
+                ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
+                        + " "  + vecPatientMedicine[0].value +  " ml 成功！");
+                QMessageBox::information(NULL, "提示", "撤销成功！");
+            }
+            else
+            {
+                ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
+                        + " "  + vecPatientMedicine[0].value +  " ml 失败！");
+                QMessageBox::information(NULL, "提示", "撤销失败！");
+            }
+        }
+        else
+        {
+            QMessageBox::information(NULL, "提示", "撤销失败！");
+        }
+
+    } break;
+    default:
+        break;
+    }
+}
+
+
+void MainWindow::savePatientEvent(int operateType, int type, QString value)
+{
+    if (m_number == "")
+    {
+        QMessageBox::information(NULL, "提示", "请先保存病人信息！");
+        return;
+    }
+
+
+    QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
+
+    QString strSql = "INSERT INTO patient_event (number, operate_type, type, value, create_time) VALUES('"
+            + m_number + "', "
+            + QString::number(operateType) + ", "
+            + QString::number(type) + ", '"
+            + value + "', '"
+            + datetime->toString("yyyy-MM-dd hh:mm:ss") + "'"
+            + ")";
+
+    bool result = insertSql(strSql);
+    if (result)
+    {
+        ui->txtMonitorEventTip->append("病人编号："  + m_number + " " + value + " 成功！");
+    }
+    else
+    {
+        ui->txtMonitorEventTip->append("病人编号："  + m_number + " " + value  + " 失败！");
+        QMessageBox::information(NULL, "提示", "保存失败！");
     }
 }
 
@@ -813,158 +1032,31 @@ void MainWindow::on_btnInfoModify_clicked()
     }
 }
 
-void MainWindow::on_btnMonitorPOK_clicked()
+void MainWindow::on_btnMonitorOK_clicked(int type)
 {
-    if (m_number == "")
-    {
-        QMessageBox::information(NULL, "提示", "请先保存病人信息！");
-        return;
-    }
+    MedicineType medicineType = m_vecMedicineType[type];
 
-    QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
+    QString objName = QString("txtMonitorMedicine" + medicineType.en_name);
+    QLineEdit* qLineEdit = ui->tabMonitor->findChild<QLineEdit*>(objName);
 
-    QString strPropofol = ui->txtMonitorPropofol->text();
-
-    QString strSql = "INSERT INTO patient_medicine (number, type, value, create_time) VALUES('"
-            + m_number + "', 0, '"
-            + strPropofol + "', '"
-            + datetime->toString("yyyy-MM-dd hh:mm:ss") + "'"
-            + ")";
-
-    bool result = insertSql(strSql);
-    if (result)
-    {
-        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 丙泊酚 " + ui->txtMonitorPropofol->text() + " ml 成功！");
-        //QMessageBox::information(NULL, "提示", "保存成功！");
-    }
-    else
-    {
-        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 丙泊酚 " + ui->txtMonitorPropofol->text() + " ml 失败！");
-        QMessageBox::information(NULL, "提示", "保存失败！");
-    }
-
+    savePatientMedicine(type, medicineType.cn_name, qLineEdit->text());
 }
 
-void MainWindow::on_btnMonitorSOK_clicked()
+void MainWindow::on_btnMonitorCancel_clicked(int type)
 {
-    if (m_number == "")
-    {
-        QMessageBox::information(NULL, "提示", "请先保存病人信息！");
-        return;
-    }
-
-    QDateTime *datetime=new QDateTime(QDateTime::currentDateTime());
-
-    QString strSufentanil = ui->txtMonitorSufentanil->text();
-
-    QString strSql = "INSERT INTO patient_medicine (number, type, value, create_time) VALUES('"
-            + m_number + "', 1, '"
-            + strSufentanil + "', '"
-            + datetime->toString("yyyy-MM-dd hh:mm:ss") + "'"
-            + ")";
-    bool result = insertSql(strSql);
-    if (result)
-    {
-        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 舒芬太尼 " + ui->txtMonitorSufentanil->text() + " ml 成功！");
-        //QMessageBox::information(NULL, "提示", "保存成功！");
-    }
-    else
-    {
-        ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 注射 舒芬太尼 " + ui->txtMonitorSufentanil->text() + " ml 失败！");
-        QMessageBox::information(NULL, "提示", "保存失败！");
-
-    }
+    cancelPatientMedicine(type);
 }
 
-
-void MainWindow::on_btnMonitorCancel_clicked()
+void MainWindow::on_btnEventOK_clicked(int type)
 {
-
-
+    EventType eventType = m_vecBtnEventType[type];
+    savePatientEvent(0, type, eventType.cn_name);
 }
 
-void MainWindow::on_btnMonitorPCancel_clicked()
+void MainWindow::on_txtEventOK_clicked(int type)
 {
-    QMessageBox:: StandardButton btnResult= QMessageBox::information(NULL, "提示", "确定撤销吗？",QMessageBox::Yes|QMessageBox::No);
-
-    switch (btnResult)
-    {
-    case QMessageBox::Yes:
-    {
-        QString strSql = "SELECT COUNT(*) AS count FROM patient_medicine WHERE type = 0 AND number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
-        bool result = judgePatientMedicine(strSql);
-        if (!result)
-        {
-            QMessageBox::information(NULL, "提示", "暂无数据可撤销！");
-            return;
-        }
-
-        vector<PatientMedicine> vecPatientMedicine;
-
-        strSql = "SELECT t.name, p.value, p.create_time FROM patient_medicine AS p LEFT JOIN medicine_type AS t ON p.type = t.type"
-                + QString(" WHERE p.type = 0 AND p.number = ") + m_number + " ORDER BY p.create_time DESC LIMIT 1 ";
-        selectMedicineInfo(strSql, vecPatientMedicine);
-
-        strSql = "DELETE FROM patient_medicine WHERE type = 0 AND number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
-        result = deleteSql(strSql);
-        if (result)
-        {
-            ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
-                    + " "  + vecPatientMedicine[0].value +  " ml 成功！");
-            QMessageBox::information(NULL, "提示", "撤销成功！");
-        }
-        else
-        {
-            ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
-                    + " "  + vecPatientMedicine[0].value +  " ml 失败！");
-            QMessageBox::information(NULL, "提示", "撤销失败！");
-        }
-
-    } break;
-    default:
-        break;
-    }
-}
-
-void MainWindow::on_btnMonitorSCancel_clicked()
-{
-    QMessageBox:: StandardButton btnResult= QMessageBox::information(NULL, "提示", "确定撤销吗？",QMessageBox::Yes|QMessageBox::No);
-
-    switch (btnResult)
-    {
-    case QMessageBox::Yes:
-    {
-        QString strSql = "SELECT COUNT(*) AS count FROM patient_medicine WHERE type = 1 AND number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
-        bool result = judgePatientMedicine(strSql);
-        if (!result)
-        {
-            QMessageBox::information(NULL, "提示", "暂无数据可撤销！");
-            return;
-        }
-
-        vector<PatientMedicine> vecPatientMedicine;
-
-        strSql = "SELECT t.name, p.value, p.create_time FROM patient_medicine AS p LEFT JOIN medicine_type AS t ON p.type = t.type"
-                + QString(" WHERE p.type = 1 AND p.number = ") + m_number + " ORDER BY p.create_time DESC LIMIT 1 ";
-        selectMedicineInfo(strSql, vecPatientMedicine);
-
-        strSql = "DELETE FROM patient_medicine WHERE type = 1 AND number = '" + m_number + "' ORDER BY create_time DESC LIMIT 1 ";
-        result = deleteSql(strSql);
-        if (result)
-        {
-            ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
-                    + " "  + vecPatientMedicine[0].value +  " ml 成功！");
-            QMessageBox::information(NULL, "提示", "撤销成功！");
-        }
-        else
-        {
-            ui->txtMonitorMedicineTip->append("病人编号："  + m_number + " 撤销注射 " + vecPatientMedicine[0].name
-                    + " "  + vecPatientMedicine[0].value +  " ml 失败！");
-            QMessageBox::information(NULL, "提示", "撤销失败！");
-        }
-
-    } break;
-    default:
-        break;
-    }
+    EventType eventType = m_vecTxtEventType[type];
+    QString objName = QString("txtMonitorEvent" + eventType.en_name);
+    QLineEdit* qLineEdit = ui->tabMonitor->findChild<QLineEdit*>(objName);
+    savePatientEvent(1, type, qLineEdit->text());
 }
