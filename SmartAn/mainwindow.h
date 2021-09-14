@@ -103,6 +103,7 @@ public slots:
     void dpichanged();
 private:
     const int MESSAGE_INVALID = -1; // 约定无效值
+    const int HISTORY_DATA_RANGE = 800; // 历史数据窗口长度
 
     QSignalMapper* m_medicineTypeOKMapper;
     QSignalMapper* m_medicineTypeCancelMapper;

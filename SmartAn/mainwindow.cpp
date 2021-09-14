@@ -493,8 +493,8 @@ void  MainWindow::historyShow(QDateTime datatime, double RATE,double DIAP,
     if(SpO2 != MESSAGE_INVALID) ui->widgetHisRATE->graph(1)->addData(key, SpO2);//添加数据2到曲线2
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
-    ui->widgetHisRATE->graph(0)->removeDataBefore(key-600);
-    ui->widgetHisRATE->graph(1)->removeDataBefore(key-600);
+    ui->widgetHisRATE->graph(0)->removeDataBefore(key-HISTORY_DATA_RANGE);
+    ui->widgetHisRATE->graph(1)->removeDataBefore(key-HISTORY_DATA_RANGE);
 
     //自动设定graph(1)曲线y轴的范围，如果不设定，有可能看不到图像
     //也可以用ui->widgetPressure->yAxis->setRange(up,low)手动设定y轴范围
@@ -505,7 +505,7 @@ void  MainWindow::historyShow(QDateTime datatime, double RATE,double DIAP,
     //就把8调整为比较大到值，比如要显示60秒，那就改成60。
     //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
     ui->widgetHisRATE->yAxis->setRange(0, 150);
-    ui->widgetHisRATE->xAxis->setRange(key+0.25, 600, Qt::AlignRight);//设定x轴的范围
+    ui->widgetHisRATE->xAxis->setRange(key+0.25, HISTORY_DATA_RANGE, Qt::AlignRight);//设定x轴的范围
     ui->widgetHisRATE->replot();
 
 
@@ -518,8 +518,8 @@ void  MainWindow::historyShow(QDateTime datatime, double RATE,double DIAP,
     if(DIAP != MESSAGE_INVALID) ui->widgetHisPressure->graph(1)->addData(key, DIAP);//添加数据2到曲线2
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
-    ui->widgetHisPressure->graph(0)->removeDataBefore(key-600);
-    ui->widgetHisPressure->graph(1)->removeDataBefore(key-600);
+    ui->widgetHisPressure->graph(0)->removeDataBefore(key-HISTORY_DATA_RANGE);
+    ui->widgetHisPressure->graph(1)->removeDataBefore(key-HISTORY_DATA_RANGE);
 
     //自动设定graph(1)曲线y轴的范围，如果不设定，有可能看不到图像
     //也可以用ui->widgetPressure->yAxis->setRange(up,low)手动设定y轴范围
@@ -530,17 +530,17 @@ void  MainWindow::historyShow(QDateTime datatime, double RATE,double DIAP,
     //就把8调整为比较大到值，比如要显示60秒，那就改成60。
     //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
     ui->widgetHisPressure->yAxis->setRange(0, 180);
-    ui->widgetHisPressure->xAxis->setRange(key+0.25, 600, Qt::AlignRight);//设定x轴的范围
+    ui->widgetHisPressure->xAxis->setRange(key+0.25, HISTORY_DATA_RANGE, Qt::AlignRight);//设定x轴的范围
     ui->widgetHisPressure->replot();
 
 
     /*******************************************************/
 
     // if (ui->checkBox_hui->isChecked())
-    ui->widgetHisBIS->graph(0)->addData(key, BIS);//添加数据1到曲线1
+    if(BIS != MESSAGE_INVALID) ui->widgetHisBIS->graph(0)->addData(key, BIS);//添加数据1到曲线1
     //删除8秒之前的数据。这里的8要和下面设置横坐标宽度的8配合起来
     //才能起到想要的效果，可以调整这两个值，观察显示的效果。
-    ui->widgetHisBIS->graph(0)->removeDataBefore(key-60);
+    ui->widgetHisBIS->graph(0)->removeDataBefore(key-HISTORY_DATA_RANGE);
 
     //也可以用ui->widgetPressure->yAxis->setRange(up,low)手动设定y轴范围
     ui->widgetHisBIS->graph(0)->rescaleValueAxis(true);
@@ -549,7 +549,7 @@ void  MainWindow::historyShow(QDateTime datatime, double RATE,double DIAP,
     //就把8调整为比较大到值，比如要显示60秒，那就改成60。
     //这时removeDataBefore(key-8)中的8也要改成60，否则曲线显示不完整。
     ui->widgetHisBIS->yAxis->setRange(0, 100);
-    ui->widgetHisBIS->xAxis->setRange(key+0.25, 60, Qt::AlignRight);//设定x轴的范围
+    ui->widgetHisBIS->xAxis->setRange(key+0.25, HISTORY_DATA_RANGE, Qt::AlignRight);//设定x轴的范围
     ui->widgetHisBIS->replot();
 }
 
